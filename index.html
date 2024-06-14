@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PopApp</title>
+    <!-- <link rel="stylesheet" href="main.css"> -->
+    <link rel="stylesheet" href="main_new.css">
+    <link rel="stylesheet" href="./jQuery/jquery-ui.min.css">
+    <link rel="stylesheet" href="./jQuery/jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="./jQuery/jquery-ui.structure.min.css">
+</head>
+
+<body>
+    <div class="chrome">
+        <div class="historyNav">
+            <div class="homeBtn navBtn" id="homeBtn">
+                <icon>􀎞</icon>
+            </div>
+            <button class="navBack navBtn" id="navBack" disabled>
+                <icon>􀆉</icon>
+            </button>
+            <button class="navFrwd navBtn" id="navFrwd" disabled>
+                <icon>􀆊</icon>
+            </button>
+        </div>
+        <textarea type="text" id="urlBar" placeholder="Search or enter URL" noresize wrap="off"></textarea>
+        <div class="mainNav">
+            <div class="bookmarkBtn navBtn" id="bookmarkBtn">
+                <icon>􀉞</icon>
+            </div>
+            <!-- <div class="newTabBtn navBtn" id="newTabBtn">
+                <icon>􀅼</icon>
+            </div> -->
+            <div class="moreBtn navBtn" id="moreBtn">
+                <icon style="transform: rotate(90deg);">􀍠</icon>
+            </div>
+        </div>
+    </div>
+    <div class="popHome" id="popHome">
+        <div class="headsUp">
+            <p class="title"></p>
+            <p class="message"></p>
+        </div>
+        <div class="launchpad" id="launchpad"></div>
+        <div id="labsContainer">
+            <div class="labBoxes">
+                <div class="labDiv">
+                    <input type="checkbox" name="" id="vibrancyLabToggle">
+                    <p title="Vibrancy">
+                        Attempt to force a clear background on pages for a 'vibrant' effect<br><br><b>Lab
+                            Notes:</b><br>-
+                        May
+                        effect
+                        visibility<br>- System theme support recommended<br>- Not compatible with all sites</p>
+                </div>
+                <div class="labDiv">
+                    <input type="checkbox" name="" id="screenshotLabToggle">
+                    <p title="Compact bookmarks">
+                        Enable an alternative look for bookmarks with screenshots integrated into the title card
+                    </p>
+                </div>
+            </div>
+
+            <div id="appver" class="appver" title="What's new?">
+                <p id="appVerText"></p>
+                <div class="labsHeader" id="labsHeader">
+                    <icon class="labsIcn">􁰍</icon>
+                </div>
+            </div>
+        </div>
+
+        <div class="changesDiv" id="changesDiv">
+            <iframe src="" id="iframe-changes" frameborder="0"></iframe>
+        </div>
+
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="bkTitle">Rename Bookmark</div>
+                <div class="hint">
+                    <p>Name:</p>
+                    <p>URL:</p>
+                </div>
+                <input type="text" id="newBookmarkName">
+                <input type="text" id="newBookmarkURL">
+                <div class="buttons">
+                    <button id="editButton">Done</button>
+                    <button id="close" class="close">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <webview class="mainWebview" src="about:blank" id="mainWebview" allowpopups></webview>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script>
+        $ = jQuery = window.require('jQuery');
+    </script>
+    <script src="./jQuery/jquery-ui.min.js"></script>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>

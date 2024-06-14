@@ -1,0 +1,122 @@
+0.3.0:
+- (New) Main menu navigation items will now be enabled/disabled dynamically
+- (Updated) Transitioned/converted from vanilla javascript to jQuery
+- (Updated) Switched history nav shortcuts to (⌘) from (Alt)
+- (Updated) Switched save bookmark shortcut to (⌘K) from (⌘B)
+- Overhauled Bookmarks:
+  - (New) Drag+Drop ordering system (using jQueryUI)
+  - (New) Change bookmarks name & URL from the edit button in the context menu
+  - Focused around the 'page preview' screenshot
+  - Refined overflow and padding for better responsiveness
+  - New 'titlebox' with site name and URL
+  - Gorgeous new animations, staggered per-item
+  - Increased card size for better page preview visibility
+  - (Beta) Optional compact option for cards
+- Labs & appVer:
+  - Combined controller to show labs or changelog
+  - Reimagined layout & design based on tvOS control center
+  - (Lab) Compact bookmarks: Combine screenshot into titlebox for a simpler look
+
+0.2.2:
+- (New) Added screenshot previews as bookmark item background
+- (New) Added initial loading animation
+- (Fixed) Bug where clicking the main menu button from PopHome wasn't possible
+- (Fixed) Bug relating to the always-on-top status in the main menu
+- (Fixed) Text now reverts back when de-focusing the URLbar
+- appVer UI:
+  - Refined version badge design, position, animations
+  - Changelog appears as a slideout on PopHome
+  - (Fixed) bug where back (<) button would incorrectly appear when opening the changelog
+- TopChrome area:
+  - The URLbar and main menu button will now always show on PopHome
+  - Refined design for URLbar backdrop and webview separator
+  - More fluid animations when hovering, opening & escaping URLbar
+  - Slight border/separator now appears above webpages for better contrast
+- Labs:
+  - Redesigned layout inspired by iPhone's Dynamic Island
+  - Click anywhere on it to open
+  - Click the label, or outside of the container to close
+
+0.2.1 & 0.2.1-1:
+- (New) Home button for quick access to PopHome
+- (New) Show app version in bottom-right of PopHome
+  - View the changelog by clicking the version number
+- (Updated) Always-on-top logic to only appear over apps; not system windows/popups
+- (Updated) Global design of items now (loosely) follows macOS design guidelines
+- (Removed) PopHome global shortcut hint
+- Bookmarks:
+  - Added a hint when there are no bookmarks
+  - macOS inspired design & color tweaks
+  - Show full name in tooltip when hovered
+  - Improved size & overflow of bookmark title and index
+  - (New) Activate with 1-9 on keyboard (follows bookmark position/index)
+- Labs container tweaks:
+  - New open/close animations
+  - Refined design & position
+  - Click anywhere on labs label to open/close
+    - Replaces hover-to-open
+
+0.2.0:
+- (New) Refreshed icon to reflect new app/name
+- (New) Access to app's main menu with ellipsis icon (⋮)
+- (New) Added 'reload' to app's main menu
+- (New) Hold 'alt' and drag the window to move it anywhere
+- (New) Toggle the app's global hotkey (Alt+Space) from the main menu
+- (New) History navigation (forward/backward); Hidden when disabled
+- (New) Collapsing top chrome area:
+  - Pill indicator to help with moving the window
+  - Always shown when URLbar focused
+- (New) PopHome: Access labs, bookmarks, and other PopApp features
+  - (New) Bookmarks: Save any page for later access
+    - Cmd+B to add new bookmark
+    - Ribbon button next to PopApp main menu
+    - Items saved to PopHome
+    - Right-click a bookmark to remove it
+  - (New) Labs: Test unfinished or experimental features
+    - Vibrancy: Force webpages to be transparent, showing the app's backdrop behind
+- (New) Accelerators:
+  - Alt+Left arrow to go back a page
+  - Alt+Right arrow to go forward a page
+  - Cmd+R to refresh webpage
+  - Cmd+Shift+R to reload PopApp
+  - Cmd+H to return to popHome
+  - Cmd+L to focus location/URL bar
+  - Cmd+B to bookmark current page
+- (Updated) Icon functions:
+  - Click the app's dock icon to show/hide
+  - Click the app's tray icon to show/hide
+  - Right-click the tray icon to show the app's main menu
+
+0.1.0:
+- Now PopApp
+- Open any website from the global popup
+- New URL bar:
+  - Centered on blur
+  - Search or enter URL
+  - Reload to return to homepage
+  - Navigate to any page
+- Removed robotjs dependency as it's didn't work correctly :(
+- Significant storage savings due to builder optimizatons
+
+0.0.1-1:
+- Significatly improved textbox focus method
+- Implemented robotJS for key commands
+- Implemented app icon
+
+0.0.1:
+- Translucent background
+- Toggle window with Alt+Space
+  - Focus' the main textarea for quick access
+- Centered resize origin so it's always at the center of the screen (saved/restored automatically)
+- Option to hide when clicked outside (saved/restored automatically)
+- Send button hidden until there's an input
+- Experimental custom shortcuts
+  - Cmd+Shift+I: Open ChatGPT devtools
+  - Cmd+N: New chat
+  - Cmd+,: Open ChatGPT settings
+- CSS tweaks to make the theme fit in more with macOS:
+  - Translucent sidebar and message bar
+  - Background of message bar is restricted to just the textarea
+  - Light+Dark text & background visibility tweaks
+  - Remove the homepage hints/tips
+  - Remove footer/hint text beneath main textarea

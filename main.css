@@ -1,0 +1,862 @@
+* {
+    user-select: none;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    transition: .15s;
+}
+
+icon {
+    font-family: 'SF Pro', SfPro;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+body.loaded>* {
+    opacity: 1;
+    filter: blur(0);
+}
+
+body:not(.loaded)>* {
+    opacity: 0;
+    filter: blur(10px);
+}
+
+body.freeze {
+    pointer-events: none !important;
+}
+
+body::after {
+    content: '';
+
+    opacity: 1;
+
+    width: calc(100% + 2px);
+    height: calc(100% - 19px);
+
+    transition: .15s;
+
+    position: absolute;
+    bottom: -1px;
+
+    border-radius: 10px;
+
+    pointer-events: none;
+}
+
+body:has(.popHome:not(.hide))::after {
+    opacity: 0;
+    height: calc(100% - 36px);
+}
+
+body:has(#urlBar:focus)::after,
+body:has(.chrome:hover)::after {
+    opacity: 1;
+    height: calc(100% - 36px);
+}
+
+body::before {
+    content: '';
+
+    height: 107px !important;
+    width: 100%;
+
+    background-color: var(--surface-highlight);
+    mask-image: linear-gradient(to bottom, black, transparent);
+    opacity: 0;
+    margin-bottom: -10px;
+
+    transition: .15s;
+
+    position: absolute;
+    z-index: -1;
+}
+
+body:has(.popHome:not(.hide)):has(#urlBar:focus)::before,
+body:has(.popHome.hide):has(#urlBar:focus)::before {
+    opacity: 1 !important;
+}
+
+body:has(.chrome:hover)::before {
+    opacity: .5 !important;
+}
+
+body:has(.popHome.hide):has(#urlBar:focus)::before {
+    height: 47px;
+}
+
+.chrome {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+
+    position: relative;
+
+    width: 100%;
+    height: 20px;
+
+    transition: .15s;
+
+    /* background-color: purple; */
+}
+
+.chrome:hover,
+.chrome:has(#urlBar:focus),
+body:has(.popHome:not(.hide)) .chrome {
+    height: 37px;
+}
+
+.chrome::before {
+    content: '';
+    width: 30px;
+    height: 7px;
+
+    transform: scale(1);
+
+    pointer-events: none;
+
+    background-color: var(--text-primary-blur);
+    border-radius: 100px;
+    transition: .15s;
+}
+
+.chrome:hover::before,
+.chrome:has(#urlBar:focus)::before,
+body:has(.popHome:not(.hide)) .chrome::before {
+    opacity: 0;
+    transform: scale(1.5);
+}
+
+.mainWebview {
+    width: calc(100% + 2px);
+    height: calc(100% + 1px);
+    margin-bottom: -1px;
+    margin-left: -1px;
+
+    padding: 0;
+
+    overflow: hidden;
+    border-radius: 11px;
+}
+
+body:has(.popHome:not(.hide)) .mainWebview {
+    display: none;
+}
+
+#urlBar {
+    appearance: none;
+    border: none;
+    outline: none;
+    resize: none;
+
+    position: absolute;
+    top: 0;
+    width: calc(100% - 188px);
+    height: calc(100%);
+    z-index: 1;
+
+    overflow-y: hidden;
+    white-space: nowrap;
+
+    background-color: transparent;
+    color: var(--text-primary-blur);
+    transform: scale(.5);
+    line-height: 1.75rem;
+    text-align: center;
+    transition: .15s;
+    opacity: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+    padding: 5px 7px;
+}
+
+#urlBar:focus {
+    text-align: start;
+    width: 100%;
+}
+
+.chrome:hover #urlBar,
+.chrome:has(#urlBar:focus) #urlBar,
+body:has(.popHome:not(.hide)) #urlBar {
+    opacity: 1;
+    transform: scale(1);
+}
+
+body:has(.popHome.hide) .chrome:not(.chrome:hover):not(.chrome:has(#urlBar:focus))>* {
+    opacity: 0 !important;
+    transition: .15s;
+}
+
+.navBtn {
+    appearance: none;
+    outline: none;
+    border: none;
+    z-index: 2;
+
+    width: 30px;
+    height: 30px;
+
+    color: transparent;
+    background-color: transparent;
+    border-radius: 6px;
+
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: .1s;
+}
+
+body:has(#urlBar:focus) .navBtn,
+.navBtn[disabled] {
+    display: none;
+}
+
+.mainNav {
+    position: absolute;
+    right: 4px;
+
+    display: flex;
+    width: fit-content;
+    gap: 3px;
+}
+
+body:has(.popHome:not(.hide)) .navBtn:not(.moreBtn) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+body:has(.popHome.hide) .bookmarkBtn {
+    opacity: 1;
+    pointer-events: all;
+}
+
+#urlBar:focus,
+#urlBar:hover,
+.navBtn:hover,
+.chrome:hover .navBtn,
+body:has(.popHome:not(.hide)) .navBtn {
+    color: var(--text-primary);
+}
+
+.navBtn:hover {
+    background-color: var(--surface-button);
+}
+
+.navBtn:not(:hover) {
+    box-shadow: none;
+}
+
+.historyNav {
+    position: absolute;
+    left: 4px;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+body.changes .historyNav>.navBtn:not(.homeBtn) {
+    display: none;
+}
+
+/* popHome */
+
+.popHome {
+    width: 100vw;
+    height: calc(100vh - 37px);
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    overflow: hidden;
+    border-radius: 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-primary);
+}
+
+.popHome.hide {
+    display: none;
+}
+
+.popHome.hide *,
+.popHome.hide>* {
+    filter: none !important;
+    backdrop-filter: none !important;
+}
+
+.popHome p {
+    margin: 0;
+    padding: 0;
+}
+
+.appver {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 1;
+
+    padding: 5px 10px;
+    border-radius: 100px;
+    background-color: var(--surface-secondary);
+
+    transition: border-radius .2s, opacity .1s, padding-right .1s, font-weight .1s, font-size .1s, right .4s;
+
+    position: absolute;
+    bottom: 20px;
+    right: 25px;
+}
+
+.appver:hover {
+    font-size: 13.5px;
+}
+
+.appver p {
+    opacity: .5;
+    transition: .1s;
+}
+
+.appver:hover p,
+body:has(.changesDiv.show) .appver p {
+    opacity: 1;
+}
+
+body:has(.changesDiv.show) .appver {
+    right: calc(40vw - 17px);
+    padding-right: 20px;
+    font-weight: 500;
+    font-size: 13.5px;
+    border-radius: 100px 0 0 100px;
+}
+
+.changesDiv {
+    width: 40vw;
+    height: calc(100% - 10px);
+
+    background-color: var(--surface-solid);
+    padding: 5px;
+
+    display: flex;
+
+    padding: 0;
+    border-radius: 10px 0 0 10px;
+
+    transition: .4s;
+
+    box-sizing: border-box;
+
+    position: absolute;
+    right: -40vw;
+    top: 0;
+}
+
+.changesDiv.show {
+    right: 0;
+}
+
+.changesDiv #iframe-changes {
+    width: calc(100% - 5px);
+    height: calc(100% - 4px);
+
+    margin: 0;
+    margin-top: 2px;
+    padding: 0;
+}
+
+#labsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    overflow: hidden;
+    width: 110px;
+    height: 40px;
+
+    position: absolute;
+    bottom: 10px;
+    transform: translateY(0);
+    transition: filter .4s, height .4s, width .4s, background-color .15s, padding-bottom .4s, backdrop-filter .15s, transform .2s;
+
+    border-radius: 22px;
+    background-color: transparent;
+    padding: 5px;
+    padding-bottom: 0;
+
+    &.open {
+        height: 150px;
+        width: 350px;
+
+        padding-bottom: 45px;
+        background-color: var(--surface-secondary);
+
+        backdrop-filter: blur(10px);
+    }
+}
+
+#labsContainer:not(.open):active {
+    transform: scale(.925);
+}
+
+#labsContainer .labsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    width: calc(100% - 4px);
+    height: 41px;
+    flex-shrink: 0;
+
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    z-index: 10;
+    background-color: var(--surface-secondary);
+
+    transition: .15s;
+
+    box-sizing: border-box;
+    border-radius: 22px;
+    padding: 5px;
+    padding-right: 15px;
+}
+
+#labsContainer.open .labsHeader {
+    border-radius: 0 0 22px 22px;
+    backdrop-filter: blur(10px);
+    background-color: var(--surface);
+}
+
+#labsContainer:not(.open):hover {
+    background-color: var(--surface);
+}
+
+.popHome #labsLabel {
+    font-size: 25px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.labsIcn {
+    font-size: 19px;
+    padding: 0 10px 0 8px;
+}
+
+#labsContainer .toggle {
+    width: 43px;
+    height: 43px;
+
+    font-size: 15px;
+    border-radius: 40px 0 0 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    opacity: 1;
+
+    background-color: inherit;
+    box-shadow: inset 0 0 0 100px #00000011;
+
+    &::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        width: 100%;
+        height: 50px;
+    }
+}
+
+body:has(#labsContainer.open) .toggle icon {
+    transform: rotate(180deg);
+}
+
+.popHome .labDiv {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 7px;
+    font-size: 12px;
+
+    border-radius: 11px;
+
+    position: relative;
+
+    width: 100%;
+    padding: 10px 5px;
+    box-sizing: border-box;
+    transition: .2s;
+
+    & p {
+        padding-top: 18px;
+
+        position: relative;
+    }
+
+    & p::before {
+        content: attr(title);
+        font-size: 15px;
+        font-weight: 600;
+
+        position: absolute;
+        top: 0;
+    }
+
+    & input[type="checkbox"] {
+        margin-bottom: auto;
+    }
+}
+
+#labsContainer:not(.open) .labDiv {
+    opacity: 0;
+}
+
+.reloadHint {
+    font-size: 12px;
+
+    width: max-content;
+    max-width: 100%;
+
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+
+    padding: 5px 10px !important;
+    border-radius: 100px;
+
+    background-color: var(--surface);
+    color: var(--text-primary);
+    opacity: .5;
+}
+
+.launchpad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 60px 15px;
+
+    padding: 20px 0 50px 0;
+    box-sizing: border-box;
+
+    width: 100%;
+    overflow-y: scroll;
+
+    transition: .2s;
+}
+
+.launchpad:empty {
+    flex-direction: column;
+}
+
+.launchpad:empty::before {
+    content: 'No bookmarks';
+    font-weight: 600;
+    opacity: .5;
+}
+
+.launchpad:empty::after {
+    content: 'Bookmark pages with ⌘B or with the ribbon button in the top-right';
+    font-size: 13px;
+    opacity: .5;
+}
+
+body:has(#labsContainer.open) .launchpad,
+body:has(#changesDiv.show) .launchpad,
+body:has(#changesDiv.show) #labsContainer {
+    transform: scale(.95);
+    filter: blur(7px);
+    opacity: .8;
+
+    pointer-events: none;
+}
+
+.launchpad .bookmark-item {
+    width: 200px;
+    height: 130px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+
+    position: relative;
+    z-index: 1;
+
+    border-radius: 11px;
+    background-color: var(--surface-button);
+    transition: .1s;
+
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(10px);
+    animation: floatFadeIn 0.5s ease forwards;
+
+    & img.favicon {
+        width: 35px;
+        height: 35px;
+
+        box-sizing: border-box;
+        padding: 4px;
+        border-radius: 12px;
+        background-color: var(--text-primary);
+
+        z-index: 4;
+        position: absolute;
+        top: -14px;
+
+        filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.25));
+    }
+
+    & .screenshot {
+        width: 100%;
+        height: 100%;
+
+        overflow: hidden;
+        transition: .15s;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--surface-solid);
+
+        border-radius: inherit;
+        position: absolute;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    & .screenshot img {
+        opacity: .65;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+
+        transform: .15s;
+    }
+
+    & .screenshot::before {
+        content: '';
+        border-radius: inherit;
+        width: 100%;
+        height: 100%;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
+
+    &:hover .screenshot img {
+        opacity: 1;
+        /* transform: scale(1.1); */
+    }
+
+    &>.bookmark-title {
+        font-size: 13px;
+        font-weight: 500;
+
+        width: 100%;
+        text-align: start;
+
+        background-color: var(--surface);
+        backdrop-filter: blur(7px);
+        border-radius: 0 0 10px 10px;
+
+        box-sizing: border-box;
+        padding: 10px 12px;
+        padding-top: 16px;
+        padding-left: 30px;
+
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        position: absolute;
+        top: calc(100% - 9px);
+        z-index: -10;
+    }
+
+    &:hover .bookmark-title {
+        padding-top: 21px;
+    }
+
+    &::before {
+        content: attr(index);
+
+        font-size: 12px;
+        color: var(--text-primary-blur);
+
+        background-color: transparent;
+        width: 17px;
+        height: 20px;
+        border-radius: 5px;
+        transition: .15s;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background-color: var(--surface-button);
+
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 7px;
+        z-index: 20;
+    }
+
+    &:hover::before {
+        top: calc(100% + 10px);
+    }
+
+    &:hover .favicon {
+        top: -20px;
+    }
+
+    &:hover .screenshot {
+        width: 105%;
+        height: 105%;
+    }
+}
+
+/* body.loaded .bookmark-item>*:not(::after) {
+    pointer-events: none;
+} */
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --surface: #ffffff;
+        --surface-solid: #ffffff;
+        --surface-secondary: #ffffffaa;
+        --surface-button: #ffffff89;
+        --surface-button-attention: #eee;
+
+        --surface-highlight: #ffffffaa;
+
+        --text-primary: #222;
+        --text-primary-blur: #22222288;
+
+        color: black;
+    }
+
+    .launchpad .bookmark-item .screenshot::before,
+    .launchpad .bookmark-item .bookmark-title,
+    .launchpad .bookmark-item,
+    #labsContainer,
+    .navBtn,
+    body::after,
+    .appver,
+    .changesDiv {
+        box-shadow:
+            0 5px 15px #00000011,
+            inset 0 0 0 1px #00000035,
+            inset 0 0 0 2px #ffffff55;
+
+        &:not(#labsContainer):not(.bookmark-title):not(.mainWebview):not(.changesDiv):hover,
+        :focus {
+            box-shadow:
+                0 5px 15px #00000011,
+                inset 0 0 0 1px #00000035,
+                inset 0 0 0 2px #ffffff55,
+                inset 0 0 0 100vw #00000015;
+        }
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --surface: #222222aa;
+        --surface-solid: #222222;
+        --surface-secondary: #404040aa;
+        --surface-button: #333333aa;
+        --surface-button-attention: #eeeeee2f;
+
+        --surface-highlight: #ffffff44;
+
+        --text-primary: #eee;
+        --text-primary-blur: #eeeeee88;
+
+        color: white;
+    }
+
+    .launchpad .bookmark-item .screenshot::before,
+    .launchpad .bookmark-item .bookmark-title,
+    .launchpad .bookmark-item,
+    #labsContainer,
+    .navBtn,
+    body::after,
+    .appver,
+    .changesDiv {
+        box-shadow:
+            0 5px 15px #00000011,
+            inset 0 0 0 1px #00000084,
+            inset 0 0 0 2px #ffffff19;
+
+        &:not(#labsContainer):not(.bookmark-title):not(.mainWebview):not(.changesDiv):hover,
+        :focus {
+            box-shadow:
+                0 5px 15px #00000011,
+                inset 0 0 0 1px #00000084,
+                inset 0 0 0 2px #ffffff19,
+                inset 0 0 0 100vw #ffffff15;
+        }
+    }
+}
+
+@font-face {
+    font-family: SfPro;
+    src: url(./sfp.ttf);
+}
+
+@keyframes floatFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+        filter: blur(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}

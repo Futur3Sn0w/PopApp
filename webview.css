@@ -1,0 +1,92 @@
+* {
+    overflow-x: hidden !important;
+    cursor: default !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* 
+button:has(.line-clamp-3),
+.relative.px-2.py-2:has(span) {
+    display: none !important;
+}
+
+body:has(div[class="sticky top-0 juice:p-3 mb-1.5 flex items-center justify-between z-10 h-14 p-2 font-semibold bg-token-main-surface-primary"]) div[class="flex flex-col text-sm pb-9"] {
+    padding-top: 65px !important;
+}
+
+div[class="sticky top-0 juice:p-3 mb-1.5 flex items-center justify-between z-10 h-14 p-2 font-semibold bg-token-main-surface-primary"] {
+    position: fixed !important;
+    top: 0 !important;
+    width: calc(100%) !important;
+    height: 65px !important;
+    margin-right: -10px !important;
+}
+
+div[class="flex flex-col text-sm pb-9"]:has(div[data-testid="conversation-turn-2"]) div[class="sticky top-0 juice:p-3 mb-1.5 flex items-center justify-between z-10 h-14 p-2 font-semibold bg-token-main-surface-primary"] {
+    background: var(--main-header-gt) !important;
+    backdrop-filter: blur(15px) !important;
+}
+
+div.flex.grow.flex-col.gap-1:has(h2[class="text-lg font-medium leading-6 text-token-text-primary"])::after {
+    content: "Click the tray icon for PopGPT settings";
+    font-size: 13px;
+    opacity: .5;
+}
+
+.flex.min-w-0.flex-1.flex-col {
+    padding: .375rem !important;
+    padding-left: 1rem !important;
+    margin-right: .25rem !important;
+    border-radius: 26px !important;
+    background: var(--main-surface-secondary) !important;
+}
+
+.flex.w-full.flex-col.transition-colors:has(.flex.min-w-0.flex-1.flex-col) {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+.flex.w-full.flex-col.transition-colors:has(.flex.min-w-0.flex-1.flex-col) button[disabled=""] {
+    display: none !important;
+}
+
+div[class="flex items-end gap-1.5 md:gap-3.5"] {
+    align-items: flex-end !important;
+}
+
+div[class="flex items-end gap-1.5 md:gap-3.5"]>div[type="button"],
+div[class="flex items-end gap-1.5 md:gap-3.5"]>button {
+    transform: translateY(-5px);
+}
+
+.px-3.text-base.m-auto:has(.mx-auto.flex.flex-1.gap-3.text-base) {
+    padding: .75rem !important;
+}
+
+:root {
+    --main-surface-primary: transparent !important;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --sidebar-surface-primary: #ffffffdd !important;
+        --main-surface-secondary: #e3e3e3dd !important;
+        --main-header-gt: #ffffffdd !important;
+
+        --text-secondary: #565656 !important;
+        --text-tertiary: var(--gray-600) !important;
+        --text-quaternary: var(--gray-500) !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --sidebar-surface-primary: #212121dd !important;
+        --main-surface-secondary: #2f2f2faa !important;
+        --main-header-gt: #212121aa !important;
+
+        --text-secondary: var(--gray-200) !important;
+        --text-tertiary: var(--gray-300) !important;
+        --text-quaternary: var(--gray-400) !important;
+    }
+} */

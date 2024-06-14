@@ -1,0 +1,29 @@
+{
+    "appId": "com.futur3sn0w.popapp",
+    "productName": "PopApp",
+    "copyright": "Copyright © 2024, Futur3Sn0w",
+    "directories": {
+        "buildResources": "buildResources"
+    },
+    "files": [
+        "**/*",
+        "buildResources/**/*",
+        "!**/node_modules",
+        "!**/dist",
+        "!**/dist-popgpt"
+    ],
+    "mac": {
+        "target": [
+            {
+                "target": "dmg",
+                "arch": [
+                    "x64"
+                ]
+            }
+        ],
+        "icon": "./buildResources/app.icns"
+    },
+    "dmg": {
+        "title": "${productName}"
+    }
+}
