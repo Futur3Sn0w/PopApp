@@ -107,13 +107,16 @@
         </div>
     </div>
     <webview class="mainWebview" src="about:blank" id="mainWebview" allowpopups></webview>
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script>
-        $ = jQuery = window.require('jQuery');
-    </script>
+    <!-- <script>
+        const $ = require('jquery'); 
+    </script> -->
+    <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
+    <script src="./jQuery/jquery.min.js"></script>
     <script src="./jQuery/jquery-ui.min.js"></script>
+    <script>if (window.module) module = window.module;</script>
 
     <script src="renderer.js"></script>
+
 </body>
 
 </html>

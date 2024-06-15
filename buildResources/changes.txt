@@ -1,8 +1,19 @@
+0.3.1:
+- Meta:
+  - (New) Main menu navigation items will now be enabled/disabled dynamically
+  - (Updated) History navigation items now no longer show in the tray menu; only the app's menu
+  - (Updated) Refined jQueryUI implementation
+  - (Updated) Removed old files and cleaned up file structure
+- Links:
+  - (New) You can now open external links in PopApp
+  - (New) You can now set PopApp as your default web browser
+
 0.3.0:
-- (Updated) Transitioned/converted from vanilla javascript to jQuery
-- (Updated) Switched history nav shortcuts to (⌘) from (Alt)
-- (Updated) Switched save bookmark shortcut to (⌘K) from (⌘B)
-- (New) Main menu navigation items will now be enabled/disabled dynamically
+- Meta:
+  - (New) Different tray icon to better distinguish the app
+  - (Updated) Transitioned/converted from vanilla javascript to jQuery
+  - (Updated) Switched history nav shortcuts to (⌘) from (Alt)
+  - (Updated) Switched save bookmark shortcut to (⌘K) from (⌘B)
 - (New) Dynamic Toast (😉):
   - Greets you when you first launch the app
   - Grants timeouts to undo an action

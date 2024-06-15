@@ -1230,7 +1230,7 @@ body.altBookmark {
 
 @font-face {
     font-family: SfPro;
-    src: url(./sfp.ttf);
+    src: url(./buildResources/sfp.ttf);
 }
 
 @keyframes floatFadeIn {

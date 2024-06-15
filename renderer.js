@@ -270,17 +270,37 @@ ipcRenderer.on('window-focus', function () {
     }
 });
 
+ipcRenderer.on('external-url', (e, url) => {
+    showHeadsUp('Opening Link', url, 7)
+    webview.attr('src', url)
+})
+
+ipcRenderer.on('console-log', (event, log) => {
+    switch (log.type) {
+        case 'log':
+            console.log(log.message);
+            break;
+        case 'warn':
+            console.warn(log.message);
+            break;
+        case 'error':
+            console.error(log.message);
+            break;
+        case 'info':
+            console.info(log.message);
+            break;
+        case 'debug':
+            console.debug(log.message);
+            break;
+        default:
+            console.log(log.message);
+            break;
+    }
+});
 
 ipcRenderer.on('window-blur', function () {
     $('body').addClass('blur')
 });
-
-// ipcRenderer.on('focus', function () {
-//     checkWindowHeight();
-//     if (localStorage.getItem('screenshotLab') === 'true') {
-//         $('body').addClass('altBookmark');
-//     }
-// });
 
 ipcRenderer.on('reload-wv', function () {
     webview[0].reload();
@@ -467,8 +487,15 @@ function recallBookmarks() {
         $titleLabel.append($titleText)
 
         bookmarkItem.on('click', function () {
-            webview.attr('src', $(this).attr('url'));
-            urlInput.val($(this).attr('url').replace('https://', '').replace('http://', ''));
+            if ($(this).data('dragging')) {
+                // Prevent click event if item is being dragged
+                event.stopImmediatePropagation();
+            } else {
+                // Handle click event normally
+                // Your click event handler code here
+                webview.attr('src', $(this).attr('url'));
+                urlInput.val($(this).attr('url').replace('https://', '').replace('http://', ''));
+            }
         });
 
         if (item.screenshot) {
@@ -497,7 +524,19 @@ function recallBookmarks() {
 
     $('#launchpad').sortable({
         items: '.bookmark-item',
+        cursor: "move",
+        opacity: 0.5,
+        revert: true,
+        scroll: false,
+        start: function (event, ui) {
+            // Set a flag when sorting starts
+            ui.item.data('dragging', true);
+        },
         update: function (event, ui) {
+            // Clear the flag when sorting ends
+            ui.item.removeData('dragging');
+
+            // Update localStorage and perform other necessary actions
             const newOrder = $(this).sortable('toArray', { attribute: 'id' });
 
             const newSavedURLs = newOrder.map(id => {

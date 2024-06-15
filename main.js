@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, globalShortcut, ipcMain, Tray, Menu } = require('electron');
+const { app, BrowserWindow, protocol, screen, globalShortcut, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -84,14 +84,13 @@ function createWindow() {
         menu.popup(BrowserWindow.fromWebContents(event.sender));
     });
 
-    tray = new Tray(path.join(__dirname, 'pickerIconTemplate.png'));
+    tray = new Tray(path.join(__dirname, './buildResources/pickerIconTemplate.png'));
     rebuildContextMenu();
     tray.setToolTip('PopApp');
     tray.on('right-click', () => {
         tray.popUpContextMenu(contextMenuF);
     });
 
-    // Toggle main window visibility on tray icon click
     tray.on('click', () => {
         if (mainWindow.isVisible()) {
             mainWindow.hide();
@@ -102,6 +101,43 @@ function createWindow() {
     });
 
     mainWindow.hide();
+
+    captureConsoleLogs();
+}
+
+function captureConsoleLogs() {
+    const originalConsole = {
+        log: console.log,
+        warn: console.warn,
+        error: console.error,
+        info: console.info,
+        debug: console.debug
+    };
+
+    console.log = function (...args) {
+        originalConsole.log.apply(this, args);
+        mainWindow.webContents.send('console-log', { type: 'log', message: args.join(' ') });
+    };
+
+    console.warn = function (...args) {
+        originalConsole.warn.apply(this, args);
+        mainWindow.webContents.send('console-log', { type: 'warn', message: args.join(' ') });
+    };
+
+    console.error = function (...args) {
+        originalConsole.error.apply(this, args);
+        mainWindow.webContents.send('console-log', { type: 'error', message: args.join(' ') });
+    };
+
+    console.info = function (...args) {
+        originalConsole.info.apply(this, args);
+        mainWindow.webContents.send('console-log', { type: 'info', message: args.join(' ') });
+    };
+
+    console.debug = function (...args) {
+        originalConsole.debug.apply(this, args);
+        mainWindow.webContents.send('console-log', { type: 'debug', message: args.join(' ') });
+    };
 }
 
 function rebuildContextMenu() {
@@ -222,7 +258,7 @@ ipcMain.on('reload', (event) => {
 });
 
 ipcMain.on('changes', (event) => {
-    const filePath = path.join(__dirname, 'changes.txt');
+    const filePath = path.join(__dirname, './buildResources/changes.txt');
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading file:', err);
@@ -306,7 +342,23 @@ function handleResize() {
     mainWindow.setBounds({ x: newX, y: newY, width, height });
 }
 
+app.on('open-url', (event, url) => {
+    event.preventDefault();
+    if (!mainWindow.isVisible()) {
+        mainWindow.show();
+        mainWindow.focus();
+    } else {
+        mainWindow.focus();
+    }
+    mainWindow.webContents.send('external-url', url)
+});
+
 let offsetX, offsetY;
+
+protocol.registerSchemesAsPrivileged([
+    { scheme: 'http', privileges: { standard: true, secure: true, supportFetchAPI: true } },
+    { scheme: 'https', privileges: { standard: true, secure: true, supportFetchAPI: true } }
+]);
 
 app.on('ready', () => {
     createWindow();
