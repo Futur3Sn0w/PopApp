@@ -1,21 +1,29 @@
 0.3.0:
-- (New) Main menu navigation items will now be enabled/disabled dynamically
 - (Updated) Transitioned/converted from vanilla javascript to jQuery
 - (Updated) Switched history nav shortcuts to (⌘) from (Alt)
 - (Updated) Switched save bookmark shortcut to (⌘K) from (⌘B)
+- (New) Main menu navigation items will now be enabled/disabled dynamically
+- (New) Dynamic Toast (😉):
+  - Greets you when you first launch the app
+  - Grants timeouts to undo an action
+  - (New) When the main window is shown, if you've copied a URL, press return/enter to visit
 - Overhauled Bookmarks:
+  - (New) Maximum 9 bookmarks (will be increased in the future)
   - (New) Drag+Drop ordering system (using jQueryUI)
   - (New) Change bookmarks name & URL from the edit button in the context menu
+  - (Updated) Toolbar ribbon item will now be 'filled' when the current page is bookmarked
   - Focused around the 'page preview' screenshot
   - Refined overflow and padding for better responsiveness
   - New 'titlebox' with site name and URL
   - Gorgeous new animations, staggered per-item
   - Increased card size for better page preview visibility
+  - Cards collapse when there's not enough height in the main window
   - (Beta) Optional compact option for cards
 - Labs & appVer:
   - Combined controller to show labs or changelog
   - Reimagined layout & design based on tvOS control center
   - (Lab) Compact bookmarks: Combine screenshot into titlebox for a simpler look
+    - Note: Compact mode is automatically enabled when the window is short enough, but this will force it to stay enabled
 
 0.2.2:
 - (New) Added screenshot previews as bookmark item background

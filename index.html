@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PopApp</title>
     <!-- <link rel="stylesheet" href="main.css"> -->
-    <link rel="stylesheet" href="main_new.css">
+    <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="./jQuery/jquery-ui.min.css">
     <link rel="stylesheet" href="./jQuery/jquery-ui.theme.min.css">
     <link rel="stylesheet" href="./jQuery/jquery-ui.structure.min.css">
@@ -28,7 +28,8 @@
         <textarea type="text" id="urlBar" placeholder="Search or enter URL" noresize wrap="off"></textarea>
         <div class="mainNav">
             <div class="bookmarkBtn navBtn" id="bookmarkBtn">
-                <icon>􀉞</icon>
+                <icon class="a">􀉞</icon>
+                <icon class="b">􀉟</icon>
             </div>
             <!-- <div class="newTabBtn navBtn" id="newTabBtn">
                 <icon>􀅼</icon>
@@ -38,28 +39,42 @@
             </div>
         </div>
     </div>
+    <div class="headsUp">
+        <p class="title"></p>
+        <p class="message"></p>
+    </div>
     <div class="popHome" id="popHome">
-        <div class="headsUp">
-            <p class="title"></p>
-            <p class="message"></p>
-        </div>
         <div class="launchpad" id="launchpad"></div>
         <div id="labsContainer">
             <div class="labBoxes">
                 <div class="labDiv">
-                    <input type="checkbox" name="" id="vibrancyLabToggle">
-                    <p title="Vibrancy">
-                        Attempt to force a clear background on pages for a 'vibrant' effect<br><br><b>Lab
-                            Notes:</b><br>-
-                        May
-                        effect
-                        visibility<br>- System theme support recommended<br>- Not compatible with all sites</p>
+                    <input type="checkbox" name="vibrancyLabToggle" id="vibrancyLabToggle">
+                    <label for="vibrancyLabToggle" title="Vibrancy">
+                        Attempt to force a clear background on pages for a 'vibrant' effect
+                        <br>
+                        <br>
+                        <b>Lab Notes:</b>
+                        <br>
+                        - May effect visibility
+                        <br>
+                        - System theme support recommended
+                        <br>
+                        - Not compatible with all sites
+                    </label>
                 </div>
                 <div class="labDiv">
-                    <input type="checkbox" name="" id="screenshotLabToggle">
-                    <p title="Compact bookmarks">
+                    <input type="checkbox" name="screenshotLabToggle" id="screenshotLabToggle">
+                    <label for="screenshotLabToggle" title="Compact bookmarks">
                         Enable an alternative look for bookmarks with screenshots integrated into the title card
-                    </p>
+                        <br>
+                        <br>
+                        <b>Lab Notes:</b>
+                        <br>
+                        - Compact bookmarks are automatically enabled when the window is too short to show the full
+                        preivews
+                        <br>
+                        - This setting overrides the default so they always stay small
+                    </label>
                 </div>
             </div>
 
@@ -69,10 +84,10 @@
                     <icon class="labsIcn">􁰍</icon>
                 </div>
             </div>
-        </div>
 
-        <div class="changesDiv" id="changesDiv">
-            <iframe src="" id="iframe-changes" frameborder="0"></iframe>
+            <div class="changesDiv" id="changesDiv">
+                <iframe src="" id="iframe-changes" frameborder="0"></iframe>
+            </div>
         </div>
 
         <div id="editModal" class="modal">

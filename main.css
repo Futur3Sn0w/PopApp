@@ -28,7 +28,7 @@ body {
     overflow: hidden;
 }
 
-body.loaded>* {
+body.loaded>*:not(.headsUp) {
     opacity: 1;
     filter: blur(0);
 }
@@ -74,17 +74,17 @@ body:has(.chrome:hover)::after {
 body::before {
     content: '';
 
-    height: 107px !important;
+    height: 214px !important;
     width: 100%;
 
-    background-color: var(--surface-highlight);
-    mask-image: linear-gradient(to bottom, black, transparent);
+    background: radial-gradient(var(--surface-glow) 20%, transparent);
+    mask-image: linear-gradient(to bottom, black 20%, transparent);
     opacity: 0;
-    margin-bottom: -10px;
 
     transition: .15s;
 
     position: absolute;
+    top: -107px;
     z-index: -1;
 }
 
@@ -94,7 +94,7 @@ body:has(.popHome.hide):has(#urlBar:focus)::before {
 }
 
 body:has(.chrome:hover)::before {
-    opacity: .5 !important;
+    opacity: .75 !important;
 }
 
 body:has(.popHome.hide):has(#urlBar:focus)::before {
@@ -108,6 +108,7 @@ body:has(.popHome.hide):has(#urlBar:focus)::before {
     flex-shrink: 0;
 
     position: relative;
+    z-index: 6;
 
     width: 100%;
     height: 20px;
@@ -172,8 +173,9 @@ body:has(.popHome:not(.hide)) .mainWebview {
     height: calc(100%);
     z-index: 1;
 
-    overflow-y: hidden;
     white-space: nowrap;
+    overflow-y: hidden;
+    resize: none;
 
     background-color: transparent;
     color: var(--text-primary-blur);
@@ -256,6 +258,26 @@ body:has(.popHome.hide) .bookmarkBtn {
     pointer-events: all;
 }
 
+.bookmarkBtn {
+    display: flex;
+
+    & .a {
+        display: flex;
+    }
+
+    & .b {
+        display: none;
+    }
+
+    &.bookmarked .a {
+        display: none;
+    }
+
+    &.bookmarked .b {
+        display: flex;
+    }
+}
+
 #urlBar:focus,
 #urlBar:hover,
 .navBtn:hover,
@@ -305,10 +327,15 @@ body.changes .historyNav>.navBtn:not(.homeBtn) {
     justify-content: center;
 
     color: var(--text-primary);
-}
 
-.popHome.hide {
-    display: none;
+    &.hide {
+        display: none;
+    }
+
+    & p {
+        margin: 0;
+        padding: 0;
+    }
 }
 
 .popHome.hide *,
@@ -317,34 +344,118 @@ body.changes .historyNav>.navBtn:not(.homeBtn) {
     backdrop-filter: none !important;
 }
 
-.popHome p {
-    margin: 0;
-    padding: 0;
+.headsUp {
+    background-color: var(--surface-solid);
+
+    position: fixed;
+    top: -20px;
+    z-index: 5;
+
+    width: fit-content;
+    height: fit-content;
+    aspect-ratio: 4/1;
+
+    transform: scale(.65);
+    transition: .5s;
+    opacity: 0;
+    filter: blur(10px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+
+    box-sizing: border-box;
+    padding: 10px 20px;
+    border-radius: 100px;
+
+    user-select: none;
+
+    &:not(.show) {
+        pointer-events: none;
+    }
+
+    &:hover {
+        filter: blur(10px) !important;
+        opacity: .5 !important;
+    }
+
+    &.show {
+        top: 45px;
+        transform: scale(1);
+        opacity: 1;
+        filter: blur(0);
+    }
+
+    & .title {
+        font-size: 14px;
+        font-weight: 500;
+        max-width: max-content;
+    }
+
+    & .message {
+        font-size: 12px;
+        opacity: .5;
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &:has(.message:empty) {
+        margin-bottom: -3px;
+    }
+
+    & p {
+        margin: 0;
+        padding: 0;
+    }
 }
 
 .appver {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     opacity: 1;
 
-    padding: 5px 10px;
+    padding: 5px 5px 5px 13px;
     border-radius: 100px;
-    background-color: var(--surface-secondary);
+    background-color: var(--surface-button);
 
-    transition: border-radius .2s, opacity .1s, padding-right .1s, font-weight .1s, font-size .1s, right .4s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 
-    position: absolute;
-    bottom: 20px;
-    right: 25px;
-}
+    transition: transform .15s, border-radius .2s, opacity .1s, padding-right .1s, font-weight .1s, font-size .1s, right .4s;
 
-.appver:hover {
-    font-size: 13.5px;
-}
+    /* position: absolute; */
+    z-index: 25;
+    /* bottom: 20px; */
+    /* right: 25px; */
 
-.appver p {
-    opacity: .5;
-    transition: .1s;
+    & p {
+        opacity: .5;
+        transition: .1s;
+    }
+
+    & p::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+
+        width: 50%;
+        height: 100%;
+    }
+
+    &:hover {
+        background-color: var(--surface-button-attention);
+        transform: scale(1.075);
+    }
+
+    &:active {
+        transform: scale(.925);
+    }
 }
 
 .appver:hover p,
@@ -352,60 +463,68 @@ body:has(.changesDiv.show) .appver p {
     opacity: 1;
 }
 
-body:has(.changesDiv.show) .appver {
-    right: calc(40vw - 17px);
-    padding-right: 20px;
-    font-weight: 500;
-    font-size: 13.5px;
-    border-radius: 100px 0 0 100px;
+body:has(.changesDiv.show) .appver,
+body:has(#labsContainer.open) .appver {
+    background-color: var(--surface-button-attention);
 }
 
 .changesDiv {
     width: 40vw;
-    height: calc(100% - 10px);
+    height: calc(100vh - 97px);
 
-    background-color: var(--surface-solid);
+    background-color: var(--surface-secondary);
+    backdrop-filter: blur(10px);
     padding: 5px;
 
     display: flex;
+    transform: scale(.7);
+    transform-origin: top right;
+    filter: blur(10px);
+    opacity: 0;
 
     padding: 0;
-    border-radius: 10px 0 0 10px;
+    border-radius: 11px;
 
     transition: .4s;
 
     box-sizing: border-box;
 
     position: absolute;
-    right: -40vw;
-    top: 0;
-}
-
-.changesDiv.show {
+    top: 50px;
     right: 0;
-}
+    z-index: 30;
 
-.changesDiv #iframe-changes {
-    width: calc(100% - 5px);
-    height: calc(100% - 4px);
+    &:not(.show) {
+        pointer-events: none;
+    }
 
-    margin: 0;
-    margin-top: 2px;
-    padding: 0;
+    &.show {
+        transform: scale(1);
+        filter: blur(0);
+        opacity: 1;
+    }
+
+    &.show:hover {
+        background-color: var(--surface-solid);
+    }
+
+    & #iframe-changes {
+        width: calc(100%);
+        height: calc(100%);
+
+        margin: 0;
+        padding: 0;
+    }
 }
 
 #labsContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-
-    overflow: hidden;
-    width: 110px;
-    height: 40px;
+    width: min-content;
+    height: min-content;
 
     position: absolute;
-    bottom: 10px;
-    transform: translateY(0);
+    top: 5px;
+    right: 5px;
+    z-index: 2;
     transition: filter .4s, height .4s, width .4s, background-color .15s, padding-bottom .4s, backdrop-filter .15s, transform .2s;
 
     border-radius: 22px;
@@ -413,125 +532,120 @@ body:has(.changesDiv.show) .appver {
     padding: 5px;
     padding-bottom: 0;
 
-    &.open {
-        height: 150px;
-        width: 350px;
+    & .labsHeader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
 
-        padding-bottom: 45px;
-        background-color: var(--surface-secondary);
+        width: 0;
+        height: 0;
+        flex-shrink: 0;
 
-        backdrop-filter: blur(10px);
+        overflow: hidden;
+
+        z-index: 10;
+        background-color: var(--surface-solid);
+
+        transition: .15s;
+
+        box-sizing: border-box;
+        border-radius: 22px;
     }
-}
 
-#labsContainer:not(.open):active {
-    transform: scale(.925);
-}
+    /* &:not(.open) .appver,
+    &:has(.changesDiv:not(.show)) .appver {
+        padding: 5px 10px;
+        gap: 0;
+    } */
 
-#labsContainer .labsHeader {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    & .labsHeader:hover {
+        background-color: var(--surface-button-attention);
+    }
 
-    width: calc(100% - 4px);
-    height: 41px;
-    flex-shrink: 0;
+    &:has(.labsHeader:hover) .appver {
+        background-color: var(--surface-solid);
+    }
 
-    position: absolute;
-    left: 2px;
-    bottom: 2px;
-    z-index: 10;
-    background-color: var(--surface-secondary);
+    &.open .labsHeader,
+    &:has(.changesDiv.show) .labsHeader {
+        width: 32px !important;
+        height: 32px !important;
+    }
 
-    transition: .15s;
+    & .labBoxes {
+        transform: scale(.6);
+        transition: .35s;
+        transform-origin: top right;
 
-    box-sizing: border-box;
-    border-radius: 22px;
-    padding: 5px;
-    padding-right: 15px;
-}
+        pointer-events: none;
 
-#labsContainer.open .labsHeader {
-    border-radius: 0 0 22px 22px;
-    backdrop-filter: blur(10px);
-    background-color: var(--surface);
-}
+        filter: blur(10px);
+        opacity: 0;
 
-#labsContainer:not(.open):hover {
-    background-color: var(--surface);
-}
+        background-color: var(--surface-secondary);
+        backdrop-filter: blur(10px);
+        border-radius: 11px;
 
-.popHome #labsLabel {
-    font-size: 25px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
+        display: flex;
+        flex-direction: column;
 
-.labsIcn {
-    font-size: 19px;
-    padding: 0 10px 0 8px;
-}
+        position: absolute;
+        top: 50px;
+        right: 0px;
 
-#labsContainer .toggle {
-    width: 43px;
-    height: 43px;
+        width: 350px;
+        height: min-content;
+    }
 
-    font-size: 15px;
-    border-radius: 40px 0 0 40px;
+    &.open .labBoxes {
+        transform: scale(1);
+        pointer-events: all;
+        opacity: 1;
+        filter: none;
+    }
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    & .labDiv {
+        display: flex;
+        justify-content: center;
+        flex-shrink: 0;
+        gap: 7px;
+        font-size: 12px;
 
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    opacity: 1;
+        border-radius: 11px;
 
-    background-color: inherit;
-    box-shadow: inset 0 0 0 100px #00000011;
-
-    &::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
+        position: relative;
 
         width: 100%;
-        height: 50px;
+        padding: 10px 5px;
+        box-sizing: border-box;
+        transition: .2s;
     }
-}
 
-body:has(#labsContainer.open) .toggle icon {
-    transform: rotate(180deg);
-}
+    &:not(.open) .labDiv {
+        opacity: 0;
+    }
 
-.popHome .labDiv {
-    display: flex;
-    justify-content: center;
-    flex-shrink: 0;
-    gap: 7px;
-    font-size: 12px;
+    & .labDiv:not(:first-of-type)::before {
+        content: '';
+        width: calc(100% - 35px);
+        height: 1px;
 
-    border-radius: 11px;
+        position: absolute;
+        top: 0;
+        right: 1px;
 
-    position: relative;
+        background-color: var(--text-primary);
+        opacity: .25;
+    }
 
-    width: 100%;
-    padding: 10px 5px;
-    box-sizing: border-box;
-    transition: .2s;
-
-    & p {
+    & .labDiv label {
         padding-top: 18px;
 
         position: relative;
     }
 
-    & p::before {
+    & label::before {
         content: attr(title);
         font-size: 15px;
         font-weight: 600;
@@ -540,13 +654,9 @@ body:has(#labsContainer.open) .toggle icon {
         top: 0;
     }
 
-    & input[type="checkbox"] {
+    & .labDiv input[type="checkbox"] {
         margin-bottom: auto;
     }
-}
-
-#labsContainer:not(.open) .labDiv {
-    opacity: 0;
 }
 
 .reloadHint {
@@ -568,40 +678,62 @@ body:has(#labsContainer.open) .toggle icon {
 }
 
 .launchpad {
-    display: flex;
+    display: grid;
+    grid-template-rows: repeat(auto-fill, minmax(auto, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(239px, 1fr));
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
-    gap: 60px 15px;
+    align-content: start;
+    gap: 20px 10px;
+    flex-shrink: 0;
 
-    padding: 20px 0 50px 0;
+    padding: 20px 10px;
     box-sizing: border-box;
 
-    width: 100%;
+    width: fit-content;
+    max-width: calc(255px * 3);
+    height: max-content;
+    max-height: 100%;
     overflow-y: scroll;
 
+    position: relative;
+    z-index: 1;
+
     transition: .2s;
+
+    &:empty {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &:empty::before {
+        content: 'No bookmarks';
+        font-weight: 600;
+        opacity: .5;
+    }
+
+    &:empty::after {
+        content: 'Bookmark pages with ⌘K or with the ribbon button in the top-right';
+        font-size: 13px;
+        opacity: .5;
+    }
 }
 
-.launchpad:empty {
-    flex-direction: column;
+@media (max-width: 760px) {
+    .launchpad {
+        max-width: calc(255px * 2);
+    }
 }
 
-.launchpad:empty::before {
-    content: 'No bookmarks';
-    font-weight: 600;
-    opacity: .5;
-}
-
-.launchpad:empty::after {
-    content: 'Bookmark pages with ⌘B or with the ribbon button in the top-right';
-    font-size: 13px;
-    opacity: .5;
+@media (max-width: 510px) {
+    .launchpad {
+        max-width: 260px;
+    }
 }
 
 body:has(#labsContainer.open) .launchpad,
 body:has(#changesDiv.show) .launchpad,
-body:has(#changesDiv.show) #labsContainer {
+body:has(.modal.show) .launchpad {
     transform: scale(.95);
     filter: blur(7px);
     opacity: .8;
@@ -610,20 +742,18 @@ body:has(#changesDiv.show) #labsContainer {
 }
 
 .launchpad .bookmark-item {
-    width: 200px;
-    height: 130px;
+    width: 230px;
+    height: 158px;
 
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
 
     position: relative;
     z-index: 1;
 
-    border-radius: 11px;
-    background-color: var(--surface-button);
     transition: .1s;
 
     opacity: 0;
@@ -631,45 +761,37 @@ body:has(#changesDiv.show) #labsContainer {
     filter: blur(10px);
     animation: floatFadeIn 0.5s ease forwards;
 
-    & img.favicon {
-        width: 35px;
-        height: 35px;
-
-        box-sizing: border-box;
-        padding: 4px;
-        border-radius: 12px;
-        background-color: var(--text-primary);
-
-        z-index: 4;
-        position: absolute;
-        top: -14px;
-
-        filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.25));
-    }
-
     & .screenshot {
-        width: 100%;
-        height: 100%;
+        width: calc(100%);
+        aspect-ratio: 16.33/9;
 
         overflow: hidden;
-        transition: .15s;
+        transition: .20s;
 
         display: flex;
         align-items: center;
         justify-content: center;
         background-color: var(--surface-solid);
+        flex-shrink: 0;
 
-        border-radius: inherit;
+        border-radius: 10px 10px 0 0;
         position: absolute;
+        top: 0;
         z-index: 3;
-        pointer-events: none;
+    }
+
+    &:hover .screenshot {
+        aspect-ratio: 18/9;
+        border-radius: 10px;
+        margin-top: -7%;
     }
 
     & .screenshot img {
-        opacity: .65;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: center 0%;
+        border-radius: inherit;
 
         transform: .15s;
     }
@@ -686,75 +808,164 @@ body:has(#changesDiv.show) #labsContainer {
         z-index: 1000;
     }
 
-    &:hover .screenshot img {
-        opacity: 1;
-        /* transform: scale(1.1); */
-    }
+    & .bookmark-title {
+        width: 100%;
+        height: 55px;
 
-    &>.bookmark-title {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1px;
+        flex-shrink: 0;
+        overflow: hidden;
+
+        text-align: start;
         font-size: 13px;
         font-weight: 500;
 
-        width: 100%;
-        text-align: start;
-
-        background-color: var(--surface);
-        backdrop-filter: blur(7px);
-        border-radius: 0 0 10px 10px;
+        background-color: var(--surface-button-solid);
+        border-radius: 30px;
 
         box-sizing: border-box;
         padding: 10px 12px;
-        padding-top: 16px;
-        padding-left: 30px;
-
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+        padding-left: 50px;
+        max-lines: 2;
 
         position: absolute;
-        top: calc(100% - 9px);
-        z-index: -10;
+        z-index: 4;
+        bottom: 0;
     }
 
     &:hover .bookmark-title {
-        padding-top: 21px;
+        border-radius: 17px;
+        background-color: var(--surface-button-attention);
+    }
+
+    & .bookmark-title img.favicon {
+        width: 28px;
+        height: 28px;
+
+        z-index: 4;
+        position: absolute;
+        left: 12px;
+
+        /* filter: drop-shadow(0px 0px 8px rgba(0, 0, 0, 0.3)); */
+    }
+
+    & .bookmark-title img.favicon_b {
+        filter: blur(10px) saturate(2);
+        transform: scale(1);
+        z-index: 3;
+        opacity: .5;
+    }
+
+    &:hover img.favicon_b {
+        filter: blur(7px) saturate(2);
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    & .bookmark-title>.bookmark-text {
+        height: min-content;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    & .bookmark-title img.screen {
+        position: absolute;
+        right: 2px;
+        z-index: -10;
+        opacity: 0;
+
+        transition: .2s;
+        border-radius: 30px;
+
+        mask-image: linear-gradient(to right, transparent, #00000099);
+
+        width: calc(100% - 4px);
+        height: 0;
+        object-fit: cover;
+    }
+
+    &:hover .bookmark-title img.screen {
+        width: 108%;
+    }
+
+    & .bookmark-title::after {
+        content: attr(title);
+        font-size: 12px;
+        opacity: .5;
+
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     &::before {
         content: attr(index);
 
-        font-size: 12px;
+        font-size: 13px;
         color: var(--text-primary-blur);
 
-        background-color: transparent;
-        width: 17px;
-        height: 20px;
-        border-radius: 5px;
+        background-color: var(--surface-button);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 3px 5px #00000022;
+
+        width: 25px;
+        height: 25px;
+        border-radius: 50px;
         transition: .15s;
 
         display: flex;
         align-items: center;
         justify-content: center;
 
-        background-color: var(--surface-button);
-
         position: absolute;
-        top: calc(100% + 5px);
-        left: 7px;
+        top: -10px;
+        left: -10px;
         z-index: 20;
     }
 
     &:hover::before {
-        top: calc(100% + 10px);
+        background-color: var(--surface-button-attention-highlight);
+    }
+}
+
+body.blur .bookmark-item {
+    opacity: 0 !important;
+}
+
+body.altBookmark {
+    overflow: hidden;
+
+    & .bookmark-item {
+        height: 50px;
     }
 
-    &:hover .favicon {
-        top: -20px;
+    &:hover .bookmark-title {
+        border-radius: 30px !important;
     }
 
-    &:hover .screenshot {
-        width: 105%;
-        height: 105%;
+    & .bookmark-item:hover img.favicon {
+        width: 34px;
+        height: 34px;
+
+        margin-left: -3px;
+    }
+
+    & .bookmark-item img.screen {
+        opacity: 1 !important;
+        height: calc(100% - 4px) !important;
+    }
+
+    & .bookmark-item .screenshot {
+        height: 0;
+        opacity: 0;
+        transition-delay: 1s;
     }
 }
 
@@ -762,15 +973,175 @@ body:has(#changesDiv.show) #labsContainer {
     pointer-events: none;
 } */
 
+/* modal */
+
+.modal {
+    display: flex;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    transition: .4s;
+
+    opacity: 0;
+    pointer-events: none;
+
+    &.show {
+        opacity: 1;
+        pointer-events: all;
+    }
+}
+
+.modal-content {
+    background-color: var(--surface-solid);
+    color: var(--text-primary);
+    backdrop-filter: blur(10px);
+    border-radius: 11px;
+
+    margin: 15% auto;
+    padding: 10px 20px;
+    padding-top: 15px;
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    width: max-content;
+    min-width: 220px;
+    height: 135px;
+
+    transition: .4s;
+
+    transform: scale(.9) translateY(-20px);
+}
+
+.modal.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-content .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+    margin-top: auto;
+    margin-left: -10px;
+
+    position: relative;
+
+    width: calc(100% + 20px);
+}
+
+.modal-content .buttons::before {
+    content: '';
+    width: calc(100% + 26px);
+    height: 1px;
+
+    background-color: var(--text-primary);
+    opacity: .1;
+
+    position: absolute;
+    z-index: -1;
+    bottom: 31px;
+    left: -8px;
+}
+
+.modal-content input {
+    background-color: transparent;
+    height: 24px;
+    width: 81%;
+    margin-left: auto;
+
+    box-sizing: border-box;
+    padding-left: 5px;
+
+    &:focus {
+        outline: 3px solid var(--surface-highlight);
+    }
+
+    &#newBookmarkURL {
+        margin-top: 10px;
+    }
+}
+
+.bkTitle {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 auto;
+    margin-bottom: 15px;
+}
+
+.modal-content .hint {
+    font-size: 11px;
+
+    opacity: .5;
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    position: absolute;
+    transform: translateY(38px);
+}
+
+.modal-content input,
+#close,
+#editButton {
+    color: var(--text-primary);
+    border-radius: 7px;
+    appearance: none;
+    border: none;
+    outline: none;
+}
+
+#close,
+#editButton {
+    width: 76px;
+    height: 24px;
+
+    padding: 0;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+    background-color: var(--surface-button);
+}
+
+#close:hover {
+    background-color: var(--surface-button-attention);
+}
+
+#editButton {
+    background-color: var(--surface-button-attention);
+}
+
+#editButton:hover {
+    background-color: var(--surface-button);
+}
+
+.buttons:has(#close:hover) #editButton {
+    background-color: var(--surface-button);
+}
+
+
 @media (prefers-color-scheme: light) {
     :root {
         --surface: #ffffff;
         --surface-solid: #ffffff;
         --surface-secondary: #ffffffaa;
         --surface-button: #ffffff89;
+        --surface-button-solid: #ddd;
         --surface-button-attention: #eee;
+        --surface-button-attention-highlight: #eee;
 
-        --surface-highlight: #ffffffaa;
+        --surface-highlight: #eeeeee;
+        --surface-glow: #fff;
 
         --text-primary: #222;
         --text-primary-blur: #22222288;
@@ -779,19 +1150,25 @@ body:has(#changesDiv.show) #labsContainer {
     }
 
     .launchpad .bookmark-item .screenshot::before,
+    .bookmark-item img.screen,
     .launchpad .bookmark-item .bookmark-title,
-    .launchpad .bookmark-item,
-    #labsContainer,
+    .launchpad .bookmark-item::before,
+    #labsContainer .labBoxes,
     .navBtn,
     body::after,
     .appver,
-    .changesDiv {
+    .changesDiv,
+    .modal-content,
+    .headsUp,
+    #close,
+    #editButton,
+    .modal-content input {
         box-shadow:
             0 5px 15px #00000011,
             inset 0 0 0 1px #00000035,
             inset 0 0 0 2px #ffffff55;
 
-        &:not(#labsContainer):not(.bookmark-title):not(.mainWebview):not(.changesDiv):hover,
+        &:not(.modal-content):not(.labBoxes):not(.mainWebview):not(.changesDiv):not(.bookmark-item::before):hover,
         :focus {
             box-shadow:
                 0 5px 15px #00000011,
@@ -808,9 +1185,12 @@ body:has(#changesDiv.show) #labsContainer {
         --surface-solid: #222222;
         --surface-secondary: #404040aa;
         --surface-button: #333333aa;
+        --surface-button-solid: #2C2C2C;
         --surface-button-attention: #eeeeee2f;
+        --surface-button-attention-highlight: #454545;
 
         --surface-highlight: #ffffff44;
+        --surface-glow: #ffffff77;
 
         --text-primary: #eee;
         --text-primary-blur: #eeeeee88;
@@ -819,19 +1199,25 @@ body:has(#changesDiv.show) #labsContainer {
     }
 
     .launchpad .bookmark-item .screenshot::before,
+    .bookmark-item img.screen,
     .launchpad .bookmark-item .bookmark-title,
-    .launchpad .bookmark-item,
-    #labsContainer,
+    .launchpad .bookmark-item::before,
+    #labsContainer .labBoxes,
     .navBtn,
     body::after,
     .appver,
-    .changesDiv {
+    .changesDiv,
+    .modal-content,
+    .headsUp,
+    #close,
+    #editButton,
+    .modal-content input {
         box-shadow:
             0 5px 15px #00000011,
             inset 0 0 0 1px #00000084,
             inset 0 0 0 2px #ffffff19;
 
-        &:not(#labsContainer):not(.bookmark-title):not(.mainWebview):not(.changesDiv):hover,
+        &:not(.modal-content):not(.labBoxes):not(.mainWebview):not(.changesDiv):not(.bookmark-item::before):hover,
         :focus {
             box-shadow:
                 0 5px 15px #00000011,

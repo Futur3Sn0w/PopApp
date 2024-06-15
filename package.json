@@ -1,8 +1,8 @@
 {
   "name": "popapp",
   "productName": "PopApp",
-  "version": "0.3",
-  "description": "A global webview popup for macOS",
+  "version": "0.3.0",
+  "description": "Summon a floating browser window from anywhere; Carefully designed for macOS",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

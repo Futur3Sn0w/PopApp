@@ -14,20 +14,22 @@ let isDragging = false;
 let startX, startY;
 let currentBookmarkId;
 let canGoBack, canGoForward, canReload = false;
+let clipURL;
 
 $(window).on('load', function () {
     aot = localStorage.getItem('alwaysOnTop') || true;
     ipcRenderer.send('setAOT', aot);
 
+    windowSize = JSON.parse(localStorage.getItem('windowSize') || '{"width":800,"height":600}');
+    if (!windowSize.width || !windowSize.height) {
+        localStorage.setItem('windowSize', JSON.stringify({ width: 800, height: 600 }));
+    }
+
     if (localStorage.getItem('screenshotLab') === 'true') {
         $('body').addClass('altBookmark');
     } else {
         $('body').removeClass('altBookmark');
-    }
-
-    windowSize = JSON.parse(localStorage.getItem('windowSize') || '{"width":800,"height":600}');
-    if (!windowSize.width || !windowSize.height) {
-        localStorage.setItem('windowSize', JSON.stringify({ width: 800, height: 600 }));
+        checkWindowHeight();
     }
 
     webview.on('did-navigate did-frame-finish-load did-finish-load did-navigate-in-page page-title-updated dom-ready', handleWebviewEvents);
@@ -37,6 +39,12 @@ $(window).on('load', function () {
         updateButtonStates();
         vibrancyLab();
         screenshotLab();
+        checkAndHighlightBookmark()
+        ipcRenderer.send('nav', {
+            canGoBack: webview[0].canGoBack(),
+            canGoForward: webview[0].canGoForward(),
+            canReload: !curl.includes('about:blank')
+        });
         setTimeout(() => {
             updateScreenshotIfBookmarked(curl);
         }, 5000);
@@ -58,7 +66,7 @@ $(window).on('load', function () {
 
     $('body').addClass('loaded');
 
-    showHeadsUp('PopHome', 'Welcome back!', 7)
+    showHeadsUp('Welcome Back!', '', 7)
 });
 
 ipcRenderer.on('appver', (e, ver) => {
@@ -68,6 +76,12 @@ ipcRenderer.on('appver', (e, ver) => {
 $('#appVerText').on('click', (e) => {
     ipcRenderer.send('changes');
     $('#changesDiv').toggleClass('show');
+    $('#labsContainer').removeClass('open');
+});
+
+$('#labsHeader').on('click', function () {
+    $('#labsContainer').toggleClass('open');
+    $('#changesDiv').removeClass('show');
 });
 
 $(document).on('click', (e) => {
@@ -79,7 +93,7 @@ $(document).on('click', (e) => {
     }
 });
 
-ipcRenderer.on('global-hotkey', (e, state) => {
+ipcRenderer.on('global-shortcut', (e, state) => {
     localStorage.setItem('globalHotkey', state);
 });
 
@@ -89,8 +103,9 @@ ipcRenderer.on('changes', (event, content) => {
         <style>
             body {
                 font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-                font-size: .9em;
-                padding: 20px;
+                font-size: .8em;
+                padding: 10px;
+                user-select: none;
             }
             h3 {
                 margin-top: 20px;
@@ -166,6 +181,7 @@ function handleWebviewEvents() {
     vibrancyLab();
     screenshotLab();
     updateScreenshotIfBookmarked(curl);
+    checkAndHighlightBookmark()
     ipcRenderer.send('nav', {
         canGoBack: webview[0].canGoBack(),
         canGoForward: webview[0].canGoForward(),
@@ -221,29 +237,50 @@ document.getElementById('mainWebview').addEventListener('did-fail-load', (event)
 
 ipcRenderer.on('window-focus', function () {
     recallBookmarks();
-    $('body').removeClass('blur')
+    $('body').removeClass('blur');
+
     const commonExtensions = [
         '.com', '.net', '.org', '.edu', '.gov', '.mil',
-        '.co', '.io', '.app', '.dev', // Newer extensions
-        '.co.uk', '.uk', '.ca', '.au', '.de', '.fr', '.jp', '.cn', // Country codes
-        // ... add more as needed
+        '.co', '.io', '.app', '.dev',
+        '.co.uk', '.uk', '.ca', '.au', '.de', '.fr', '.jp', '.cn',
     ];
 
-    for (const extension of commonExtensions) {
-        if (clipboard.readText().trim().includes(extension)) {
-            showHeadsUp('Open Link?', `${clipboard.readText().trim()}`, 5);
-            return; // Exit after finding the first match
+    const clipboardText = clipboard.readText().trim();
+
+    if (!clipboardText.includes(' ')) {
+        const urlPattern = /^(https?:\/\/)?(www\.)?[^\s]+$/i;
+
+        if (urlPattern.test(clipboardText)) {
+            const hasValidExtension = commonExtensions.some(extension => clipboardText.endsWith(extension));
+
+            if (hasValidExtension) {
+                if (!clipboardText.startsWith('http://') && !clipboardText.startsWith('https://')) {
+                    clipURL = 'https://' + clipboardText;
+                } else {
+                    clipURL = clipboardText;
+                }
+                showHeadsUp('Open Link?', clipboardText, 5);
+            }
         }
     }
+
+    checkWindowHeight();
+    if (localStorage.getItem('screenshotLab') === 'true') {
+        $('body').addClass('altBookmark');
+    }
 });
+
 
 ipcRenderer.on('window-blur', function () {
     $('body').addClass('blur')
 });
 
-ipcRenderer.on('focus', function () {
-    launchpad.click();
-});
+// ipcRenderer.on('focus', function () {
+//     checkWindowHeight();
+//     if (localStorage.getItem('screenshotLab') === 'true') {
+//         $('body').addClass('altBookmark');
+//     }
+// });
 
 ipcRenderer.on('reload-wv', function () {
     webview[0].reload();
@@ -310,14 +347,18 @@ function vibrancyLab() {
 
 $('#screenshotLabToggle').on('change', function () {
     localStorage.setItem('screenshotLab', $(this).prop('checked'));
-    screenshotLab();
+    if (localStorage.getItem('screenshotLab') === 'true') {
+        $('body').addClass('altBookmark');
+    } else {
+        checkWindowHeight();
+    }
 });
 
 function screenshotLab() {
     if (localStorage.getItem('screenshotLab') === 'true') {
         $('body').addClass('altBookmark');
     } else {
-        $('body').removeClass('altBookmark');
+        checkWindowHeight()
     }
 }
 
@@ -325,19 +366,30 @@ ipcRenderer.on('save-bookmark', saveBookmark);
 
 $('#bookmarkBtn').on('click', saveBookmark);
 
+function checkAndHighlightBookmark() {
+    const currentURL = webview[0].getURL();
+    let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
+
+    const isBookmarked = savedURLs.some(item => item.url === currentURL);
+
+    if (isBookmarked) {
+        $('.bookmarkBtn').addClass('bookmarked');
+    } else {
+        $('.bookmarkBtn').removeClass('bookmarked');
+    }
+}
+
 function saveBookmark() {
     const currentURL = webview[0].getURL();
     const title = webview[0].getTitle();
     let newFav = currentFavi.favicons[currentFavi.favicons.length - 1] || './nofav.png';
     let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
 
-    // Check if there are already 9 bookmarks saved
     if (savedURLs.length >= 9) {
         alert('You already have 9 bookmarks saved. No more can be saved.');
-        return; // Cancel the saving process
+        return;
     }
 
-    // Proceed if the current URL is not already bookmarked
     if (!savedURLs.some(item => item.url === currentURL)) {
         captureAndSaveBookmark(currentURL, title, newFav, savedURLs);
     } else {
@@ -354,16 +406,9 @@ function captureAndSaveBookmark(currentURL, title, favicon, savedURLs) {
         let screenshot = image.toDataURL();
         const bookmarkIndex = savedURLs.length + 1;
 
-        // Create the new bookmark without the id first
         const newBookmark = { id: 'item' + bookmarkIndex, title, url: currentURL, favicon, screenshot };
         savedURLs.push(newBookmark);
 
-        // Get the index of the newly added bookmark
-
-        // Update the bookmark to include the id
-        // savedURLs[bookmarkIndex - 1].id = ;
-
-        // Save the updated bookmarks to localStorage and send them to ipcRenderer
         localStorage.setItem('savedURLs', JSON.stringify(savedURLs));
         ipcRenderer.send('setBookmarks', JSON.stringify(savedURLs));
 
@@ -373,7 +418,7 @@ function captureAndSaveBookmark(currentURL, title, favicon, savedURLs) {
 
 function recallBookmarks() {
     const savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
-    const animationDelay = 0.1; // Adjust as needed
+    const animationDelay = 0.1;
 
     launchpad.empty();
 
@@ -397,6 +442,12 @@ function recallBookmarks() {
             class: 'favicon'
         });
 
+        const faviconImg_b = $('<img>', {
+            src: item.favicon,
+            alt: item.title,
+            class: 'favicon favicon_b'
+        });
+
         const cleanUrl = item.url.replace(/^(http:\/\/|https:\/\/)/, '');
         const $titleLabel = $('<div></div>', {
             class: 'bookmark-title',
@@ -405,6 +456,7 @@ function recallBookmarks() {
         });
 
         $titleLabel.append(faviconImg);
+        $titleLabel.append(faviconImg_b);
 
         const $titleText = $('<div></div>', {
             text: item.title,
@@ -438,39 +490,33 @@ function recallBookmarks() {
         }
         bookmarkItem.append($titleLabel);
 
-        // Apply animation delay
         bookmarkItem.css('animation-delay', `${(animationDelay * index) + .2}s`);
 
         launchpad.append(bookmarkItem);
     });
 
-    // Initialize jQuery UI Sortable
     $('#launchpad').sortable({
         items: '.bookmark-item',
         update: function (event, ui) {
-            // Get the new order of elements
             const newOrder = $(this).sortable('toArray', { attribute: 'id' });
 
-            // Map the new order to savedURLs
             const newSavedURLs = newOrder.map(id => {
                 const index = id.split('-')[1] - 1;
                 return savedURLs[index];
             });
 
-            // Save the new order to localStorage
             localStorage.setItem('savedURLs', JSON.stringify(newSavedURLs));
             recallBookmarks();
+            checkWindowHeight();
         }
     });
 
     ipcRenderer.on('edit-bookmark', (event, bookmarkId) => {
         editBookmark(bookmarkId);
     });
-}
 
-$('#labsHeader').on('click', function () {
-    $('#labsContainer').toggleClass('open');
-});
+    checkWindowHeight();
+}
 
 $('#navBack').on('click', function () {
     webview[0].goBack();
@@ -482,6 +528,28 @@ $('#navFrwd').on('click', function () {
 
 $('#homeBtn').on('click', function () {
     ipcRenderer.send('reload');
+});
+
+ipcRenderer.on('goBack', () => {
+    if (!$('body').hasClass('changes')) {
+        if (webview[0].canGoBack()) {
+            webview[0].goBack();
+            updateURL();
+        }
+    } else {
+        ipcRenderer.send('reload')
+    }
+});
+
+ipcRenderer.on('goFrwd', () => {
+    if (!$('body').hasClass('changes')) {
+        if (webview[0].canGoForward()) {
+            webview[0].goForward();
+            updateURL();
+        }
+    } else {
+        ipcRenderer.send('reload')
+    }
 });
 
 webview.on('dom-ready', function () {
@@ -498,7 +566,7 @@ $(window).on('resize', function () {
 });
 
 webview.on('new-window', (e) => {
-    webview[0].attr('src', e.url);
+    webview.attr('src', e.url);
 });
 
 webview.on('will-navigate', function (event, url) {
@@ -535,6 +603,15 @@ $(document).on('keydown', (event) => {
     }
 });
 
+$(document).on('keypress', (event) => {
+    if (event.key === 'Enter') {
+        if ($('.headsUp') && $('.headsUp').hasClass('show')) {
+            if (webview && clipURL) {
+                webview.attr('src', clipURL);
+            }
+        }
+    }
+});
 // modal
 
 function editBookmark(bookmarkId) {
@@ -546,21 +623,18 @@ function editBookmark(bookmarkId) {
         return;
     }
 
-    // Populate both input fields
     $('#newBookmarkName').val(bookmark.title);
     $('#newBookmarkURL').val(bookmark.url);
 
-    // Update the modal title for clarity
     $('.bkTitle').text(`Edit "${bookmark.title}"`);
 
-    // Store the bookmark ID for later reference
     currentBookmarkId = bookmarkId;
 
     $('#editModal').addClass('show');
     $('#newBookmarkName').focus();
 }
 
-function performEdit() { // Renamed for clarity
+function performEdit() {
     const newName = $('#newBookmarkName').val().trim();
     const newURL = $('#newBookmarkURL').val().trim();
 
@@ -577,7 +651,6 @@ function performEdit() { // Renamed for clarity
         return;
     }
 
-    // Update both title and URL
     savedURLs[bookmarkIndex].title = newName;
     savedURLs[bookmarkIndex].url = newURL;
 
@@ -610,5 +683,26 @@ $('#editButton').click(function () {
 $('#newBookmarkName').keypress(function (event) {
     if (event.which === 13) {
         performEdit();
+    }
+});
+
+function checkWindowHeight() {
+    if ($('.bookmark-item').length >= 7 && $(window).height() > 425 && $(window).height() < 590) {
+        $('body').addClass('altBookmark');
+    } else if ($('.bookmark-item').length >= 4 && $(window).height() > 235 && $(window).height() < 425) {
+        $('body').addClass('altBookmark');
+    } else if ($('.bookmark-item').length >= 1 && $(window).height() < 235) {
+        $('body').addClass('altBookmark');
+    } else {
+        $('body').removeClass('altBookmark');
+    }
+}
+
+// Check window height on resize
+$(window).resize(function () {
+    if (localStorage.getItem('screenshotLab') == 'true') {
+        $('body').addClass('altBookmark');
+    } else {
+        checkWindowHeight();
     }
 });

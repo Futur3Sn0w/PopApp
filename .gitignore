@@ -131,5 +131,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-renderer2.js
-main.js
+
