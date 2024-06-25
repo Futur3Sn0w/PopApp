@@ -1,13 +1,9 @@
-const { app, BrowserWindow, protocol, screen, globalShortcut, ipcMain, Tray, Menu } = require('electron');
+const { app, session, BrowserWindow, protocol, screen, globalShortcut, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-let mainWindow;
-let alwaysOnTop = true;
-let tray;
-let contextMenu, contextMenuF
-let isShortcutRegistered = true;
-
+let mainWindow, tray, contextMenu, contextMenuF, currentDisplay;
+let alwaysOnTop, isShortcutRegistered = true;
 let canGoBack, canGoForward, canReload = false;
 
 function createWindow() {
@@ -17,18 +13,20 @@ function createWindow() {
         minWidth: 400,
         minHeight: 200,
         frame: false,
+        show: false,
         vibrancy: 'hud',
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true,
             webviewTag: true,
-            scrollBounce: true
+            scrollBounce: true,
+            enableRemoteModule: true,
+            nativeWindowOpen: false
         },
         alwaysOnTop: true,
         skipTaskbar: true
     });
 
-    mainWindow.center();
     mainWindow.loadFile('index.html');
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     mainWindow.setAlwaysOnTop(true, 'floating');
@@ -50,6 +48,18 @@ function createWindow() {
         globalShortcut.register('Command+Right', () => { mainWindow.send('goFrwd') })
         globalShortcut.register('Escape', () => { mainWindow.hide(); });
         mainWindow.webContents.send('window-focus')
+
+        const { x: mx, y: my } = screen.getCursorScreenPoint();
+        const windowSize = mainWindow.getBounds();
+        const display = screen.getDisplayNearestPoint({ x: mx, y: my });
+        const { width: displayWidth, height: displayHeight } = display.workAreaSize;
+
+        mainWindow.setBounds({
+            x: display.bounds.x + (displayWidth / 2) - (windowSize.width / 2),
+            y: display.bounds.y + (displayHeight / 2) - (windowSize.height / 2),
+            width: windowSize.width,
+            height: windowSize.height
+        });
     });
 
     mainWindow.on('hide', function () {
@@ -67,13 +77,13 @@ function createWindow() {
     ipcMain.on('show-context-menu', (event, itemId) => {
         const template = [
             {
-                label: 'Remove',
+                label: 'Remove bookmark',
                 click: () => {
                     event.sender.send('remove-bookmark', itemId);
                 }
             },
             {
-                label: 'Edit',
+                label: 'Edit bookmark...',
                 click: () => {
                     event.sender.send('edit-bookmark', itemId);
                 }
@@ -100,9 +110,53 @@ function createWindow() {
         }
     });
 
-    mainWindow.hide();
+    mainWindow.webContents.on('new-window', (event, url) => {
+        event.preventDefault();
+        console.log('new window attempt blocked')
+        mainWindow.webContents.send('external-url', url)
+    });
+
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        event.preventDefault();
+        console.log('new window attempt blocked')
+        mainWindow.webContents.send('external-url', url)
+    });
+
+    // mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    //     console.log(`new window attempt blocked for url: ${url}`)
+    //     mainWindow.webContents.send('external-url', url)
+    //     return { action: 'deny' };
+    // });
+
+    mainWindow.once('ready-to-show', () => {
+        centerWindow(mainWindow);
+        mainWindow.show();
+    });
 
     captureConsoleLogs();
+}
+
+app.on('web-contents-created', (e, wc) => {
+    // wc: webContents of <webview> is now under control
+    wc.setWindowOpenHandler((handler) => {
+        console.log('new window attempt blocked')
+        mainWindow.webContents.send('external-url', handler.url)
+        return { action: "deny" }; // deny or allow
+    });
+});
+
+function centerWindow(window) {
+    const { x: mx, y: my } = screen.getCursorScreenPoint();
+    const windowSize = window.getBounds();
+    currentDisplay = screen.getDisplayNearestPoint({ x: mx, y: my });
+    const { width: displayWidth, height: displayHeight } = currentDisplay.workAreaSize;
+
+    window.setBounds({
+        x: currentDisplay.bounds.x + (displayWidth / 2) - (windowSize.width / 2),
+        y: currentDisplay.bounds.y + (displayHeight / 2) - (windowSize.height / 2),
+        width: windowSize.width,
+        height: windowSize.height
+    });
 }
 
 function captureConsoleLogs() {
@@ -274,7 +328,7 @@ function convertToHtml(text) {
     let html = '';
     let insideUl = false;
 
-    const patterns = ['(New)', '(Updated)', '(Removed)', '(Fixed)'];
+    const patterns = ['(New)', '(Updated)', '(Removed)', '(Fixed)', '(Bug)', '(Lab)'];
 
     lines.forEach(line => {
         const trimmedLine = line.trim();
@@ -323,23 +377,36 @@ ipcMain.on('setAOT', (event, resp) => {
 });
 
 ipcMain.on('setWindowSize', (event, size) => {
+    const { x, y } = screen.getCursorScreenPoint();
+    const display = screen.getDisplayNearestPoint({ x, y });
+    const { width: displayWidth, height: displayHeight } = display.workAreaSize;
+
+    mainWindow.setBounds({
+        x: display.bounds.x + (displayWidth / 2) - (size.width / 2),
+        y: display.bounds.y + (displayHeight / 2) - (size.height / 2),
+        width: size.width,
+        height: size.height
+    });
+
     mainWindow.show();
-    mainWindow.setSize(size.width, size.height);
-    mainWindow.center();
     mainWindow.focus();
 });
 
 function handleResize() {
     const { width, height } = mainWindow.getBounds();
-    const display = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = display.workAreaSize;
+    const { width: displayWidth, height: displayHeight } = currentDisplay.workAreaSize;
 
-    const newX = (screenWidth - width) / 2;
-    const newY = (screenHeight - height) / 2;
+    const newX = (displayWidth - width) / 2;
+    const newY = (displayHeight - height) / 2;
 
     mainWindow.webContents.executeJavaScript(`localStorage.setItem("windowSize", JSON.stringify({ width: ${width}, height: ${height} }))`);
 
-    mainWindow.setBounds({ x: newX, y: newY, width, height });
+    mainWindow.setBounds({
+        x: currentDisplay.bounds.x + newX,
+        y: currentDisplay.bounds.y + newY,
+        width: width,
+        height: height
+    });
 }
 
 app.on('open-url', (event, url) => {
@@ -365,7 +432,7 @@ app.on('ready', () => {
     toggleGlobalShortcut(true);
 
     mainWindow.webContents.on('did-finish-load', function () {
-        mainWindow.webContents.send('appver', app.getVersion());
+        mainWindow.webContents.send('appVer', app.getVersion());
     })
 
     ipcMain.on('start-drag', (event, { startX, startY }) => {

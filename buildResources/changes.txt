@@ -1,3 +1,44 @@
+0.4.0:
+- Meta:
+  - (New) Page title & favicon now show in place of the old grabber when a page is loaded 
+  - (New) Added a pulsing glow effect to indicate a page is loading
+  - (Fixed) Bug relating to recalling window size
+  - (Updated) PopApp now supports multiple displays; appearing on the one with your cursor
+    - Note: Resizing while on a separate display is currently broken
+  - (Updated) Downloads, links, and redirects will now open in-app rather than in an external window
+  - (Updated) More alerts moved to the new in-app toast
+- Upgraded bookmarks:
+  - (New) Show bookmarks in the collapsing chrome bar at the top of the screen
+  - (New) Edit and remove bookmarks while on a website
+  - (Updated) Refined design & animations
+  - (Updated) Section now labeled "Launchpad" on PopHome
+  - (Updated) Bookmark count now starts at 0; adding one extra keyboard-accessible slot
+  - (Updated) Bookmark hotkeys moved to ⌘+bookmark number (⌘0, ⌘1, ⌘2, etc.)
+  - (Updated) Now allows for up to 16 bookmarks (Only the first 10 will have hotkeys)
+- Modal tweaks:
+  - (Fixed) Issue with long bookmark URLs/titles could cause the edit menu to be abnormally wide
+  - (Fixed) Issue where the modal's title could overflow/get cut off by the window
+  - (Updated) Long URL/overflow design
+- Refined control area design:
+  - Unique look and feel inspired by tvOS' control center and macOS notification center
+  - Shows the tray icon image in the appVer button (for fun!)
+  - Click the app version to open/close the header area
+  - 'Header buttons' to navigate tabs (changes & labs)
+  - Clicking header buttons will now only switch between them
+  - Labels for each page
+  - Changes list:
+    - Separated into individual containers for each version
+    - Navigate between versions with the left/right arrow buttons
+    - Version being read is listed at top-left of control area
+  - Labs:
+    - Hover over labs to show their 'state button'
+    - Hovering the state button will show a text label
+    - Click a lab to show more information, toggle it with the 'Show more/less' button(s)
+- (Lab) Always show top-chrome:
+  - Keeps the top-chrome area from collapsing when not hovered
+  - Quicker visual access to bookmarks and other nav buttons
+  - Shows the page-border when not hovered; helps indicate enabled state
+
 0.3.1:
 - Meta:
   - (New) Main menu navigation items will now be enabled/disabled dynamically
@@ -37,11 +78,12 @@
     - Note: Compact mode is automatically enabled when the window is short enough, but this will force it to stay enabled
 
 0.2.2:
-- (New) Added screenshot previews as bookmark item background
-- (New) Added initial loading animation
-- (Fixed) Bug where clicking the main menu button from PopHome wasn't possible
-- (Fixed) Bug relating to the always-on-top status in the main menu
-- (Fixed) Text now reverts back when de-focusing the URLbar
+- Meta:
+  - (New) Added screenshot previews as bookmark item background
+  - (New) Added initial loading animation
+  - (Fixed) Bug where clicking the main menu button from PopHome wasn't possible
+  - (Fixed) Bug relating to the always-on-top status in the main menu
+  - (Fixed) Text now reverts back when de-focusing the URLbar
 - appVer UI:
   - Refined version badge design, position, animations
   - Changelog appears as a slideout on PopHome
@@ -57,12 +99,13 @@
   - Click the label, or outside of the container to close
 
 0.2.1 & 0.2.1-1:
-- (New) Home button for quick access to PopHome
-- (New) Show app version in bottom-right of PopHome
-  - View the changelog by clicking the version number
-- (Updated) Always-on-top logic to only appear over apps; not system windows/popups
-- (Updated) Global design of items now (loosely) follows macOS design guidelines
-- (Removed) PopHome global shortcut hint
+- Meta:
+  - (New) Home button for quick access to PopHome
+  - (New) Show app version in bottom-right of PopHome
+    - View the changelog by clicking the version number
+  - (Updated) Always-on-top logic to only appear over apps; not system windows/popups
+  - (Updated) Global design of items now (loosely) follows macOS design guidelines
+  - (Removed) PopHome global shortcut hint
 - Bookmarks:
   - Added a hint when there are no bookmarks
   - macOS inspired design & color tweaks
@@ -76,12 +119,13 @@
     - Replaces hover-to-open
 
 0.2.0:
-- (New) Refreshed icon to reflect new app/name
-- (New) Access to app's main menu with ellipsis icon (⋮)
-- (New) Added 'reload' to app's main menu
-- (New) Hold 'alt' and drag the window to move it anywhere
-- (New) Toggle the app's global hotkey (Alt+Space) from the main menu
-- (New) History navigation (forward/backward); Hidden when disabled
+- Meta:
+  - (New) Refreshed icon to reflect new app/name
+  - (New) Access to app's main menu with ellipsis icon (⋮)
+  - (New) Added 'reload' to app's main menu
+  - (New) Hold 'alt' and drag the window to move it anywhere
+  - (New) Toggle the app's global hotkey (Alt+Space) from the main menu
+  - (New) History navigation (forward/backward); Hidden when disabled
 - (New) Collapsing top chrome area:
   - Pill indicator to help with moving the window
   - Always shown when URLbar focused
@@ -107,9 +151,10 @@
   - Right-click the tray icon to show the app's main menu
 
 0.1.0:
-- Now PopApp
-- Open any website from the global popup
-- New URL bar:
+- Meta:
+  - Renamed to PopApp
+  - Open any website from the global popup
+- (New) URL bar:
   - Centered on blur
   - Search or enter URL
   - Reload to return to homepage
