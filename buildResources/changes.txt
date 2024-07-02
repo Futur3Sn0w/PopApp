@@ -13,7 +13,6 @@
         - Google Search
         - Google Gemini
         - Bing Search
-        - Microsoft Copilot
         - ChatGPT
       - Entering URLs still works as expected
     - Global shortcut:
