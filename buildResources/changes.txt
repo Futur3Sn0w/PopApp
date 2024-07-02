@@ -1,3 +1,47 @@
+0.5.0:
+- (New) Preferences UI
+  - Represents a major shift for PopApp's vision
+  - Replaces individual 'Labs container' and 'Changelog' hidden in the appver badge
+  - Adjust global settings for PopApp that always save across restarts
+  - Design inspired by iPadOS and macOS
+  - New options:
+    - Autohide main window:
+      - Now saves when changed
+      - Removed from main menu
+    - Search provider:
+      - Use the URL bar to instantly your choice of engines:
+        - Google Search
+        - Google Gemini
+        - Bing Search
+        - Microsoft Copilot
+        - ChatGPT
+      - Entering URLs still works as expected
+    - Global shortcut:
+      - Now saves when changed
+      - Removed from main menu
+    - 'Styles': Choose from various layouts for launcher items
+      - (Default) 'Full': Shows all bookmark info in a card layout resembling a tube TV
+      - 'Slim': Integrates the preview screenshot into the card for a more compact look
+      - 'Nano': The smallest available size; Made to contain almost <i>too much</i> information!
+      - 'Metro - Small': Inspired by a certain tile-based launcher UI; Shows only the title and favicon
+      - 'Metro - Wide': Inspired by a certain tile-based launcher UI; Shows only the title and preview screenshot
+      - 'Chrome': Google Chrome inspired design with heavy emphasis on keeping it minimal
+      - 'Eleven': Windows 11 inspired design with emulated 'glint' hover effect
+- (Updated) appVer badge & changelog
+  - Moved to bottom right
+  - Clicking now launches the "What's new?" tab in Preferences
+- (Updated) Escape key functionality:
+  - Moved key from global assignment (main.js) to local (renderer)
+  - Press escape to exit out of URLbar when focused
+- Launcher/Bookmarks:
+  - (New) 'Styles' provide various layouts for launcher items
+  - (New) Quick shortcut to new preferences window
+  - (Fixed) Bookmark items now always show the full URL on hover
+  - (Updated) Cleaner, more streamlined default placement & layout
+  - (Updated) Launchpad is set to fit content by default, will max out at 1024px wide
+  - (Updated) Slight rework of drag+drop reordering
+  - (Updated) Rework of bookmark saving and numbering algorithm
+
 0.4.0:
 - Meta:
   - (New) Page title & favicon now show in place of the old grabber when a page is loaded 
@@ -53,7 +97,7 @@
 - Meta:
   - (New) Different tray icon to better distinguish the app
   - (Updated) Transitioned/converted from vanilla javascript to jQuery
-  - (Updated) Switched history nav shortcuts to (⌘) from (Alt)
+  - (Updated) Switched history nav shortcuts to (⌘) from (⌥)
   - (Updated) Switched save bookmark shortcut to (⌘K) from (⌘B)
 - (New) Dynamic Toast (😉):
   - Greets you when you first launch the app
@@ -98,7 +142,7 @@
   - Click anywhere on it to open
   - Click the label, or outside of the container to close
 
-0.2.1 & 0.2.1-1:
+0.2.1(-1):
 - Meta:
   - (New) Home button for quick access to PopHome
   - (New) Show app version in bottom-right of PopHome
@@ -123,8 +167,8 @@
   - (New) Refreshed icon to reflect new app/name
   - (New) Access to app's main menu with ellipsis icon (⋮)
   - (New) Added 'reload' to app's main menu
-  - (New) Hold 'alt' and drag the window to move it anywhere
-  - (New) Toggle the app's global hotkey (Alt+Space) from the main menu
+  - (New) Hold '⌥' and drag the window to move it anywhere
+  - (New) Toggle the app's global hotkey (⌥+Space) from the main menu
   - (New) History navigation (forward/backward); Hidden when disabled
 - (New) Collapsing top chrome area:
   - Pill indicator to help with moving the window
@@ -138,8 +182,8 @@
   - (New) Labs: Test unfinished or experimental features
     - Vibrancy: Force webpages to be transparent, showing the app's backdrop behind
 - (New) Accelerators:
-  - Alt+Left arrow to go back a page
-  - Alt+Right arrow to go forward a page
+  - ⌥+Left arrow to go back a page
+  - ⌥+Right arrow to go forward a page
   - Cmd+R to refresh webpage
   - Cmd+Shift+R to reload PopApp
   - Cmd+H to return to popHome
@@ -169,7 +213,7 @@
 
 0.0.1:
 - Translucent background
-- Toggle window with Alt+Space
+- Toggle window with ⌥+Space
   - Focus' the main textarea for quick access
 - Centered resize origin so it's always at the center of the screen (saved/restored automatically)
 - Option to hide when clicked outside (saved/restored automatically)

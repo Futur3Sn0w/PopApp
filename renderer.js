@@ -16,8 +16,25 @@ const offlineImg = rootStyles.getPropertyValue('--offline-img').trim().replace(/
 // Window .on() events
 
 $(window).on('load', function () {
-    aot = localStorage.getItem('alwaysOnTop') || true;
-    ipcRenderer.send('setAOT', aot);
+    if (localStorage.getItem('autoHideWindowLab') === 'false') {
+        ipcRenderer.send('setAOT', false);
+    } else {
+        ipcRenderer.send('setAOT', true);
+    }
+
+    if (!localStorage.getItem('searchEngine')) {
+        localStorage.setItem('searchEngine', 'google');
+    }
+    engineCheck();
+
+    if (!localStorage.getItem('bookmarkStyles')) {
+        localStorage.setItem('bookmarkStyles', 'channel');
+    }
+    $('.launchpad').attr('bookmarkstyle', localStorage.getItem('bookmarkStyles'));
+
+    if (localStorage.getItem('accent')) {
+        $(':root').css('--accent', localStorage.getItem('accent'));
+    }
 
     windowSize = JSON.parse(localStorage.getItem('windowSize') || '{"width":800,"height":600}');
     if (!windowSize.width || !windowSize.height) {
@@ -26,7 +43,6 @@ $(window).on('load', function () {
     ipcRenderer.send('setWindowSize', windowSize)
 
     if (localStorage.getItem('screenshotLab') === 'true') {
-        $('#screenshotLabToggle').prop('checked', true);
         $('body').addClass('altBookmark');
     } else {
         $('body').removeClass('altBookmark');
@@ -57,12 +73,7 @@ $(window).on('load', function () {
         updateLatentInfo();
     })
 
-    if (localStorage.getItem('vibrancyLab') === 'true') {
-        $('#vibrancyLabToggle').prop('checked', true);
-    }
-
     if (localStorage.getItem('autoHideChromeLab') === 'true') {
-        $('#autoHideChromeToggle').prop('checked', true);
         $('body').addClass('expandChrome');
     } else {
         $('body').removeClass('expandChrome');
@@ -78,7 +89,10 @@ $(window).on('load', function () {
 
     updateURL = () => {
         curl = $webview[0].getURL();
-        urlInput.val(curl.replace('https://', '').replace('http://', ''));
+
+        if (!urlInput.is(':focus')) {
+            urlInput.val(curl.replace('https://', '').replace('http://', ''));
+        }
 
         if (curl !== 'about:blank') {
             $('body').addClass('webview-open');
@@ -128,7 +142,7 @@ $('#newBookmarkName').on('keypress', function (event) {
 $webview.on('will-navigate', function (event, url) {
     event.preventDefault();
     updateScreenshotIfBookmarked(url);
-    console.log('Navigation attempt prevented: ' + event.url);
+    // console.log('Navigation attempt prevented: ' + event.url);
 });
 
 $webview.on('dom-ready', function () {
@@ -158,27 +172,108 @@ $webview.on('dom-ready', function () {
 });
 
 document.getElementById('mainWebview').addEventListener('did-fail-load', (event) => {
-    // $('.loadingThrobber').removeClass('show');
     if (event.errorCode === -105) {
         const failedUrl = urlInput.val().trim();
-        if (failedUrl.indexOf('.') > 0 && failedUrl.indexOf(' ') <= 0) {
+        if (failedUrl.indexOf('.') >= 1) {
             showHeadsUp("Couldn't load page", `Requested URL is invalid`, 5)
-        } else {
+        } else if (failedUrl && failedUrl.indexOf('%20') < 1) {
             $webview.attr('src', `https://www.google.com/search?q=${encodeURIComponent(failedUrl)}`)
         }
+    } else {
+        $('.loadingThrobber').removeClass('show');
     }
 });
 
 urlInput.on('keydown', (event) => {
     if (event.key === 'Enter') {
-        let url = urlInput.val().trim();
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'http://' + url;
-        } else {
-            url = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
-        }
-        $webview.attr('src', url);
+        urlBarInput()
+    }
+});
+
+function urlBarInput() {
+    let url = urlInput.val().trim();
+    if (url == '' || url == $webview[0].getURL()) {
         urlInput.blur();
+    } else if (url.indexOf('.') > 0) {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            $webview.attr('src', `http://${url}`);
+        } else {
+            $webview.attr('src', url);
+        }
+    } else {
+        let engine = localStorage.getItem('searchEngine');
+        localStorage.setItem('temp-searchTerm', url);
+        if (engine == 'google') {
+            $webview.attr('src', `https://www.google.com/search?q=${encodeURIComponent(url)}`);
+        } else if (engine == 'chatgpt') {
+            $webview.attr('src', `https://www.chatgpt.com/`);
+
+            document.getElementById('mainWebview').addEventListener('did-finish-load', () => {
+                document.getElementById('mainWebview').executeJavaScript(`
+                    if (document.getElementById('prompt-textarea') && document.querySelector('form button[data-testid="fruitjuice-send-button"]')) {
+                        setTimeout(function () {
+                            document.getElementById('prompt-textarea').value = "${url}";
+                            document.getElementById('prompt-textarea').dispatchEvent(new Event('input', { bubbles: true }));
+                        }, 250)
+                        setTimeout(function () {
+                                document.querySelector('form button[data-testid="fruitjuice-send-button"]').click();
+                                console.log('done')
+                        }, 500)
+                    }
+                  `);
+            });
+        } else if (engine == 'gemini') {
+            $webview.attr('src', `https://gemini.google.com/`);
+
+            document.getElementById('mainWebview').addEventListener('did-finish-load', () => {
+                document.getElementById('mainWebview').executeJavaScript(`
+                  const signin = document.querySelector('.gb_Ea[aria-label="Sign in"]');
+                  if (document.querySelector('.ql-editor.textarea>p') && document.querySelector('.send-button') && !signin) {
+                    document.querySelector('.ql-editor.textarea>p').innerText = "${url}";
+                    setTimeout(function () {
+                        document.querySelector('.send-button').click();
+                    }, 250)
+                  } else {
+                    console.log('Sign into Google and then try again.');
+                    window.postMessage({ type: 'site-info', data: '' }, '*');
+                    alert('Sign into Google and then try again.');
+                   }
+                `)
+            });
+        } else if (engine == 'bing') {
+            $webview.attr('src', `https://www.bing.com/search?q=${encodeURIComponent(url)}`);
+        } else if (engine == 'copilot') {
+            $webview.attr('src', `https://gemini.google.com/`);
+
+            document.getElementById('mainWebview').addEventListener('did-finish-load', () => {
+                document.getElementById('mainWebview').executeJavaScript(`
+                  const signin = document.querySelector('.gb_Ea[aria-label="Sign in"]');
+                  if (document.querySelector('.ql-editor.textarea>p') && document.querySelector('.send-button') && !signin) {
+                    document.querySelector('.ql-editor.textarea>p').innerText = "${url}";
+                    setTimeout(function () {
+                        document.querySelector('.send-button').click();
+                    }, 250)
+                  } else {
+                    console.log('Sign into Google and then try again.');
+                    window.postMessage({ type: 'site-info', data: '' }, '*');
+                    alert('Sign into Google and then try again.');
+                   }
+                `)
+            });
+        }
+    }
+    urlInput.blur();
+}
+
+// $(window).on('message', (e) => {
+//     if (e.data.type === 'site-info') {
+//     }
+// });
+
+window.addEventListener('message', function (event) {
+    if (event.data.type === 'site-info') {
+        // ipcRenderer.send('from-webview', event.data.data);
+        showHeadsUp('Sign in', 'Sign into Google to use Gemini', 3)
     }
 });
 
@@ -186,52 +281,10 @@ urlInput.on('focus', () => {
     urlInput.select();
 });
 
-// On (change)
-
-$('#vibrancyLabToggle').on('change', function () {
-    localStorage.setItem('vibrancyLab', $(this).prop('checked'));
-    vibrancyLab();
-});
-
-$('#screenshotLabToggle').on('change', function () {
-    localStorage.setItem('screenshotLab', $(this).prop('checked'));
-    if (localStorage.getItem('screenshotLab') === 'true') {
-        $('body').addClass('altBookmark');
-    } else {
-        checkWindowHeight();
-    }
-});
-
-$('#autoHideChromeToggle').on('change', function () {
-    localStorage.setItem('autoHideChromeLab', $(this).prop('checked'));
-    if (localStorage.getItem('autoHideChromeLab') === 'true') {
-        $('body').addClass('expandChrome');
-    } else {
-        $('body').removeClass('expandChrome');
-    }
-});
-
 // On click
 
 $('.appVer').on('click', function (e) {
-    if (!$(e.target).closest('.headerBtn').length && !$(e.target).closest('.changesVertex').length) {
-        ipcRenderer.send('changes');
-        $('#changesDiv').addClass('show');
-        $('#labsContainer').removeClass('open');
-        // showVersion(0)
-    }
-});
-
-$('.labsHeader').on('click', function () {
-    $('#labsContainer').addClass('open');
-    $('#changesDiv').removeClass('show');
-    $('.changesVertex').attr('data-current-version', 'Labs')
-});
-
-$('.changesHeader').on('click', function () {
-    ipcRenderer.send('changes');
-    $('#changesDiv').addClass('show');
-    $('#labsContainer').removeClass('open');
+    ipcRenderer.send('open-prefs', "What's New?")
 });
 
 $('#moreBtn').on('click', function () {
@@ -250,16 +303,6 @@ $('#homeBtn').on('click', function () {
     ipcRenderer.send('reload');
 });
 
-$('.labDiv .showMoreBtn, .labDiv label').on('click', function () {
-    if ($(this).hasClass('showMoreBtn')) {
-        $(this).parent().toggleClass('showMore');
-    } else {
-        if (!$(this).parent().hasClass('showMore')) {
-            $(this).parent().addClass('showMore');
-        }
-    }
-})
-
 $('.close').on('click', function () {
     $('#editModal').removeClass('show');
     setTimeout(() => {
@@ -270,6 +313,22 @@ $('.close').on('click', function () {
 
 $('#editButton').on('click', function () {
     performEdit();
+});
+
+$('#prefsBtn').on('click', function () {
+    ipcRenderer.send('open-prefs', 'General')
+});
+
+$('select').on('mousedown', function (event) {
+    event.preventDefault();
+
+    $(this).focus().click();
+});
+
+$('.navBtn:not(.prefsBtn)').on('mousedown', function (event) {
+    event.preventDefault();
+
+    $(this).focus().click();
 });
 
 $('#bookmarkBtn').on('click', saveBookmark);
@@ -316,23 +375,27 @@ function handleWebviewEvents() {
 function updateLatentInfo() {
     $('.latent-info').addClass('unload');
     try {
-        const favicon = currentFavi.favicons[currentFavi.favicons.length - 1];
+        let favicon = offlineImg;
+
+        if (currentFavi && currentFavi.favicons && currentFavi.favicons.length > 0) {
+            favicon = currentFavi.favicons[currentFavi.favicons.length - 1];
+        }
+
         const $latentFavi = $('.latent-favi');
 
         $latentFavi.on('error', function () {
-            // console.error("Error loading favicon, using offline image.");
             $(this).attr('src', offlineImg);
         });
 
         $latentFavi.attr('src', favicon);
     } catch (error) {
         if (error instanceof TypeError) {
-            // console.error("Error accessing favicon, using offline image.");
             $('.latent-favi').attr('src', offlineImg);
         } else {
             throw error;
         }
     }
+
     $('.latent-info .title').text($webview[0].getTitle());
     $('.latent-info').removeClass('unload');
 }
@@ -371,7 +434,7 @@ function checkAndHighlightBookmark() {
     const currentURL = $webview[0].getURL();
     let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
 
-    const isBookmarked = savedURLs.some(item => item.url === currentURL);
+    const isBookmarked = savedURLs.filter(item => item !== null).some(item => item.url === currentURL);
 
     if (isBookmarked) {
         $('.bookmarkBtn').addClass('bookmarked');
@@ -383,26 +446,33 @@ function checkAndHighlightBookmark() {
 function saveBookmark() {
     const currentURL = $webview[0].getURL();
     const title = $webview[0].getTitle();
-    let newFav = currentFavi.favicons[currentFavi.favicons.length - 1] || offlineImg;
+    let newFav;
+
+    if (currentFavi && currentFavi.favicons && currentFavi.favicons.length > 0) {
+        newFav = currentFavi.favicons[currentFavi.favicons.length - 1];
+    } else {
+        newFav = offlineImg;
+    }
+
     let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
 
     if ($('.launchpad').children('.bookmark-item').length <= 9) {
-        $('.launchpad').removeClass('override-altBookmark')
+        $('.launchpad').removeClass('override-altBookmark');
     } else if ($('.launchpad').children('.bookmark-item').length >= 10) {
-        showHeadsUp("Compact mode enabled", `You have ${savedURLs.length} bookmark(s) saved; compacting to save space`, 7)
-        $('.launchpad').addClass('override-altBookmark')
+        showHeadsUp("Compact mode enabled", `You have ${savedURLs.length} bookmark(s) saved; compacting to save space`, 7);
+        $('.launchpad').addClass('override-altBookmark');
     } else if ($('.launchpad').children('.bookmark-item').length >= 16) {
-        showHeadsUp("Couldn't save bookmark", "You have the maximum 16 bookmarks saved.", 7)
+        showHeadsUp("Couldn't save bookmark", "You have the maximum 16 bookmarks saved.", 7);
         return;
     }
 
-    if (!savedURLs.some(item => item.url === currentURL)) {
+    if (!savedURLs.some(item => item && item.url === currentURL)) {
         captureAndSaveBookmark(currentURL, title, newFav, savedURLs);
     } else {
         if (confirm('Bookmark for this URL already exists. Do you want to save it anyway?')) {
             captureAndSaveBookmark(currentURL, title, newFav, savedURLs);
         } else {
-            showHeadsUp("Cancelled", "Bookmark not saved.", 7)
+            showHeadsUp("Cancelled", "Bookmark not saved.", 7);
         }
     }
 }
@@ -410,36 +480,62 @@ function saveBookmark() {
 function captureAndSaveBookmark(currentURL, title, favicon, savedURLs) {
     $webview[0].capturePage().then(image => {
         let screenshot = image.toDataURL();
-        const bookmarkIndex = savedURLs.length + 1;
 
-        const newBookmark = { id: 'item' + bookmarkIndex, title, url: currentURL, favicon, screenshot };
+        const newBookmark = { id: '', title, url: currentURL, favicon, screenshot };
         savedURLs.push(newBookmark);
+
+        savedURLs = renumberBookmarks(savedURLs);
 
         localStorage.setItem('savedURLs', JSON.stringify(savedURLs));
         ipcRenderer.send('setBookmarks', JSON.stringify(savedURLs));
 
         recallBookmarks();
 
-        showHeadsUp("Bookmark saved", `You have ${savedURLs.length} bookmark(s) saved; Head to the home page, or hover up here to preview & edit`, 7)
+        showHeadsUp("Bookmark saved", `You have ${savedURLs.length} bookmark(s) saved; Head to the home page, or hover up here to preview & edit`, 7);
+    });
+}
+
+function updateBookmarkOrder(newOrderIds) {
+    let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
+    savedURLs = savedURLs.filter(item => item !== null);
+
+    const newOrder = newOrderIds.map(id => savedURLs.find(item => item.id === id));
+
+    savedURLs = renumberBookmarks(newOrder);
+
+    localStorage.setItem('savedURLs', JSON.stringify(savedURLs));
+
+    recallBookmarks();
+}
+
+function renumberBookmarks(bookmarks) {
+    return bookmarks.map((bookmark, index) => {
+        bookmark.id = 'item' + (index + 1);
+        return bookmark;
     });
 }
 
 function recallBookmarks() {
-    const savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
+    let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
+    savedURLs = savedURLs.filter(item => item !== null);
     const animationDelay = 0.1;
 
-    launchpad.empty();
+    $('.bookmark-item').remove();
 
     savedURLs.forEach((item, index) => {
+        if (item === null) return; // Skip null items
+
         const bookmarkItem = $('<div></div>', {
             class: 'bookmark-item',
             id: `bookmark-${index}`,
+            'data-id': item.id, // Store the item ID for sorting
+            title: item.url,
             url: item.url
         });
 
         if (index < 10) {
             bookmarkItem.attr('index', index);
-            bookmarkItem.addClass('hotkey')
+            bookmarkItem.addClass('hotkey');
         }
 
         bookmarkItem.on('contextmenu', function (event) {
@@ -447,36 +543,30 @@ function recallBookmarks() {
             ipcRenderer.send('show-context-menu', item.id);
         });
 
+        const bookmarkInfo = $('<div>', {
+            class: 'bookmark-info'
+        });
+
         const faviconImg = $('<div>', {
             alt: item.title,
-            class: 'favicon favicon_a'
+            class: 'favicon'
         });
 
-        faviconImg.attr('style', `background-image: url(${item.favicon});`)
-
-        const faviconImg_b = $('<img>', {
-            src: item.favicon,
-            alt: item.title,
-            class: 'favicon favicon_b'
-        });
+        // Set favicon image or fallback to offlineImg on error
+        faviconImg.on('error', function () {
+            $(this).attr('style', `background-image: url(${offlineImg});`);
+        }).attr('style', `background-image: url(${item.favicon});`);
 
         const cleanUrl = item.url.replace(/^(http:\/\/|https:\/\/)/, '');
-        const $titleLabel = $('<div></div>', {
-            class: 'bookmark-title',
-            url: `${item.url}`,
-            title: cleanUrl
-        });
-
-        $titleLabel.append(faviconImg);
-        $titleLabel.append(faviconImg_b);
-
         const $titleText = $('<div></div>', {
             text: item.title,
-            title: item.title,
+            url: item.url,
+            cleanUrl: cleanUrl,
             class: 'bookmark-text'
         });
 
-        $titleLabel.append($titleText)
+        bookmarkInfo.append(faviconImg);
+        bookmarkInfo.append($titleText);
 
         bookmarkItem.on('click', function () {
             if ($(this).data('dragging')) {
@@ -489,72 +579,26 @@ function recallBookmarks() {
 
         if (item.screenshot) {
             const $screenshotImg = $('<div class="screenshot"></div>');
-            const $img = $('<img>', {
-                src: item.screenshot,
-                alt: item.title
-            });
+            $screenshotImg.attr('style', `background-image: url(${item.screenshot});`);
 
-            const $img_b = $('<img>', {
-                src: item.screenshot,
-                class: 'screen',
-                alt: item.title
-            });
-
-            $screenshotImg.append($img);
-            $titleLabel.append($img_b);
-            bookmarkItem.prepend($screenshotImg);
+            bookmarkItem.append($screenshotImg);
         }
-        bookmarkItem.append($titleLabel);
 
-        bookmarkItem.css('animation-delay', `${(animationDelay * index) + .2}s`);
+        bookmarkItem.append(bookmarkInfo);
+        bookmarkItem.css('animation-delay', `${(animationDelay * index) + 0.2}s`);
 
         launchpad.append(bookmarkItem);
 
         if ($('.launchpad').children('.bookmark-item').length <= 9) {
-            $('.launchpad').removeClass('override-altBookmark')
+            $('.launchpad').removeClass('override-altBookmark');
         } else if ($('.launchpad').children('.bookmark-item').length >= 10) {
-            $('.launchpad').addClass('override-altBookmark')
+            $('.launchpad').addClass('override-altBookmark');
         }
 
         if (launchpad[0].scrollWidth > launchpad[0].clientWidth) {
             launchpad.addClass('overflow');
         } else {
             launchpad.removeClass('overflow');
-        }
-    });
-
-    $('#launchpad').sortable({
-        items: '.bookmark-item',
-        cursor: "move",
-        opacity: 0.5,
-        tolerance: 'pointer',
-        revert: true,
-        scroll: false,
-        start: function (event, ui) {
-            ui.item.data('dragging', true);
-            ui.helper.addClass('no-transition');
-            ui.placeholder.addClass('no-transition');
-            $(this).find('li').addClass('no-transition');
-        },
-        stop: function (event, ui) {
-            ui.item.removeData('dragging');
-            ui.helper.removeClass('no-transition');
-            ui.placeholder.removeClass('no-transition');
-            $(this).find('li').removeClass('no-transition');
-        },
-        update: function (event, ui) {
-            ui.item.removeData('dragging');
-
-            const newOrder = $(this).sortable('toArray', { attribute: 'id' });
-
-            const newSavedURLs = newOrder.map(id => {
-                const index = id.split('-')[1] - 1;
-                return savedURLs[index];
-            });
-
-            localStorage.setItem('savedURLs', JSON.stringify(newSavedURLs));
-            recallBookmarks();
-            checkWindowHeight();
         }
     });
 
@@ -568,17 +612,33 @@ function recallBookmarks() {
         $('body').removeClass('altBookmark');
         checkWindowHeight();
     }
+
+    // Initialize jQuery UI sortable
+    launchpad.sortable({
+        items: '.bookmark-item',
+        scroll: false,
+        update: function (event, ui) {
+            const newOrderIds = $(this).sortable('toArray', { attribute: 'data-id' });
+            updateBookmarkOrder(newOrderIds);
+        },
+        start: function (event, ui) {
+            ui.item.data('dragging', true);
+        },
+        stop: function (event, ui) {
+            setTimeout(() => ui.item.data('dragging', false), 1);
+        }
+    });
 }
 
 function updateScreenshotIfBookmarked(url) {
     let savedURLs = JSON.parse(localStorage.getItem('savedURLs')) || [];
-    let bookmarkedItem = savedURLs.find(item => item.url === url);
+    let bookmarkedItem = savedURLs.filter(item => item !== null).find(item => item.url === url);
 
     if (bookmarkedItem) {
         $webview[0].capturePage().then(image => {
             let newScreenshot = image.toDataURL();
             bookmarkedItem.screenshot = newScreenshot;
-            localStorage.setItem('savedURLs', JSON.stringify(savedURLs));
+            localStorage.setItem('savedURLs', JSON.stringify(savedURLs.filter(item => item !== null)));
         });
     }
 }
@@ -646,27 +706,27 @@ function checkWindowHeight() {
 
 $(document).on('click', (e) => {
     if (!$.contains($('#changesDiv')[0], e.target) && !$.contains($('.appVer')[0], e.target)) {
-        $('.versionDiv').removeClass('show')
-    }
-    if (!$.contains($('#changesDiv')[0], e.target) && !$.contains($('.appVer')[0], e.target)) {
         $('#changesDiv').removeClass('show');
         $('.versionDiv').removeClass('show')
-    }
-    if (!$.contains($('#labsContainer')[0], e.target) && !$.contains($('.labsHeader')[0], e.target)) {
-        $('#labsContainer').removeClass('open');
-        $('.labDiv').removeClass('showMore');
+        $('#appVerText').text(localStorage.getItem('currentVer'))
     }
     if (!$.contains($('#editModal')[0], e.target)) {
         $('#editModal').removeClass('show');
     }
 });
 
+$(document).on('mousemove', function (e) {
+    if (!$(e.target).hasClass('bookmark-item')) {
+        $('.bookmark-item').removeData('dragging');
+    }
+})
+
 $(document).on('keydown', (event) => {
     if (document.activeElement && document.activeElement !== document.body) {
         return;
     }
 
-    if ((event.metaKey || event.ctrlKey) && event.key >= '0' && event.key <= '9') {
+    if (event.metaKey && event.key >= '0' && event.key <= '9') {
         const index = parseInt(event.key, 10);
 
         if (launchpad.length && launchpad.is(':visible')) {
@@ -676,6 +736,10 @@ $(document).on('keydown', (event) => {
                 $childDivs.eq(index).click();
             }
         }
+    }
+
+    if (event.metaKey && event.key == ',') {
+        ipcRenderer.send('toggle-prefs');
     }
 });
 
@@ -694,10 +758,39 @@ $(document).on('mousedown', '.bookmark-item', (event) => {
 });
 
 $(document).on('mouseup', '.bookmark-item', (event) => {
-    $(this).removeClass('travel')
+    $(this).removeClass('travel');
+    $(this).removeData('dragging');
 });
 
 // ipcRenderer.on()
+
+function engineCheck() {
+    let engine = localStorage.getItem('searchEngine');
+    if (engine == 'google') {
+        $('#urlBar').attr('placeholder', 'Search Google or enter URL');
+    } else if (engine == 'gemini') {
+        $('#urlBar').attr('placeholder', 'Ask Gemini or enter URL');
+    } else if (engine == 'chatgpt') {
+        $('#urlBar').attr('placeholder', 'Ask ChatGPT or enter URL');
+    } else if (engine == 'bing') {
+        $('#urlBar').attr('placeholder', 'Search Bing or enter URL');
+    } else if (engine == 'copilot') {
+        $('#urlBar').attr('placeholder', 'Ask Copilot or enter URL');
+    }
+}
+
+ipcRenderer.on('bookmark-style', (e) => {
+    $('.launchpad').attr('bookmarkstyle', localStorage.getItem('bookmarkStyles'));
+    recallBookmarks();
+})
+
+ipcRenderer.on('searchEngine', (e) => {
+    engineCheck();
+})
+
+ipcRenderer.on('runFnFromPrefs', (e, fnName) => {
+    window[fnName]();
+})
 
 ipcRenderer.on('aot-tray', (event, newAOT) => {
     localStorage.setItem('alwaysOnTop', newAOT);
@@ -708,74 +801,12 @@ ipcRenderer.on('focus-urlbar', () => {
 });
 
 ipcRenderer.on('appVer', (e, ver) => {
-    $('#appVerText').text(`v${ver}`);
+    localStorage.setItem('currentVer', ver)
+    $('#appVerText').text(`v${localStorage.getItem('currentVer')}`);
 });
 
 ipcRenderer.on('global-shortcut', (e, state) => {
     localStorage.setItem('globalHotkey', state);
-});
-
-ipcRenderer.on('changes', (event, content) => {
-    const $changesDiv = $('.changesDiv');
-    $changesDiv.empty();
-
-    const versions = content.split('<h3>');
-    let currentIndex = 0;
-
-    versions.forEach((versionHtml, index) => {
-        if (versionHtml.trim() === '') return;
-
-        const $div = $('<div>').addClass('versionDiv');
-
-        const versionContent = versionHtml.split('</h3>');
-        const versionNumber = versionContent[0].trim();
-        const changesContent = versionContent[1].trim();
-
-        $div.html(`<h3>${index === 0 ? '(Current) ' : ''}${versionNumber}</h3>${changesContent}`);
-
-        $changesDiv.append($div);
-    });
-
-    const $prevBtn = $('<button>').addClass('versionNavBtn').text('􀆉');
-    const $nextBtn = $('<button>').addClass('versionNavBtn').text('􀆊');
-
-    $prevBtn.on('click', function () {
-        showVersion(currentIndex - 1);
-    });
-
-    $nextBtn.on('click', function () {
-        showVersion(currentIndex + 1);
-    });
-
-    $('.changesVertex').empty().append($prevBtn, $nextBtn);
-
-    showVersion = function (index) {
-        if (index < 0 || index >= versions.length - 1) return;
-
-        const $currentDiv = $changesDiv.children('.versionDiv').eq(currentIndex);
-        const $nextDiv = $changesDiv.children('.versionDiv').eq(index);
-
-        $currentDiv.removeClass('show');
-        $nextDiv.addClass('show');
-
-        currentIndex = index;
-
-        const currentVersionNumber = $nextDiv.find('h3').text().replace('(Current) ', '').trim();
-        if (currentIndex === 0) {
-            $('.changesVertex').attr('data-current-version', '(Current) ' + currentVersionNumber.replace('0.', 'v0.').replace(':', ''));
-            $('.versionNavBtn').first().addClass('disabled')
-        } else if (currentVersionNumber == "0.0.1:") {
-            $('.changesVertex').attr('data-current-version', currentVersionNumber.replace('0.', 'v0.').replace(':', ''));
-            $('.versionNavBtn').last().addClass('disabled')
-        } else {
-            $('.changesVertex').attr('data-current-version', currentVersionNumber.replace('0.', 'v0.').replace(':', ''));
-            $('.versionNavBtn').last().removeClass('disabled')
-            $('.versionNavBtn').first().removeClass('disabled')
-        }
-
-    }
-
-    showVersion(0);
 });
 
 ipcRenderer.on('remove-bookmark', (event, itemId) => {

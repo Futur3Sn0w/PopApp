@@ -1,8 +1,8 @@
-const { app, session, BrowserWindow, protocol, screen, globalShortcut, ipcMain, Tray, Menu } = require('electron');
+const { app, session, dialog, systemPreferences, BrowserWindow, protocol, screen, globalShortcut, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-let mainWindow, tray, contextMenu, contextMenuF, currentDisplay;
+let mainWindow, accentColor, tray, contextMenu, contextMenuF, currentDisplay, prefsWindow;
 let alwaysOnTop, isShortcutRegistered = true;
 let canGoBack, canGoForward, canReload = false;
 
@@ -38,6 +38,8 @@ function createWindow() {
         }
     });
 
+    accentColor = systemPreferences.getAccentColor();
+
     mainWindow.on('show', function () {
         globalShortcut.register('CmdOrCtrl+Shift+I', () => { mainWindow.webContents.send('webview-devtools'); });
         globalShortcut.register('CmdOrCtrl+L', () => { mainWindow.webContents.send('focus-urlbar'); });
@@ -46,7 +48,7 @@ function createWindow() {
         globalShortcut.register('CmdOrCtrl+K', () => { mainWindow.webContents.send('save-bookmark'); });
         globalShortcut.register('Command+Left', () => { mainWindow.send('goBack') })
         globalShortcut.register('Command+Right', () => { mainWindow.send('goFrwd') })
-        globalShortcut.register('Escape', () => { mainWindow.hide(); });
+        // globalShortcut.register('Escape', () => { mainWindow.hide(); });
         mainWindow.webContents.send('window-focus')
 
         const { x: mx, y: my } = screen.getCursorScreenPoint();
@@ -70,7 +72,7 @@ function createWindow() {
         globalShortcut.unregister('CmdOrCtrl+K');
         globalShortcut.unregister('Command+Left')
         globalShortcut.unregister('Command+Right')
-        globalShortcut.unregister('Escape');
+        // globalShortcut.unregister('Escape');
         mainWindow.webContents.send('window-blur');
     })
 
@@ -122,15 +124,10 @@ function createWindow() {
         mainWindow.webContents.send('external-url', url)
     });
 
-    // mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    //     console.log(`new window attempt blocked for url: ${url}`)
-    //     mainWindow.webContents.send('external-url', url)
-    //     return { action: 'deny' };
-    // });
-
     mainWindow.once('ready-to-show', () => {
         centerWindow(mainWindow);
         mainWindow.show();
+        createPrefsWindow();
     });
 
     captureConsoleLogs();
@@ -194,54 +191,44 @@ function captureConsoleLogs() {
     };
 }
 
-function rebuildContextMenu() {
+// {
+//     label: 'Hide when clicked outside',
+//     type: 'checkbox',
+//     checked: !alwaysOnTop,
+//     click: () => {
+//         alwaysOnTop = !alwaysOnTop;
+//         mainWindow.setAlwaysOnTop(alwaysOnTop, 'floating');
+//         mainWindow.webContents.send('aot-tray', alwaysOnTop);
+//     }
+// },
+// {
+//     label: 'Use global shortcut (Alt+Space)',
+//     type: 'checkbox',
+//     checked: isShortcutRegistered,
+//     click: (menuItem) => {
+//         isShortcutRegistered = menuItem.checked;
+//         toggleGlobalShortcut(isShortcutRegistered);
+//         mainWindow.webContents.send('global-shortcut', isShortcutRegistered);
+//     },
+// },
 
+function rebuildContextMenu() {
     contextMenuF = Menu.buildFromTemplate([
         {
-            label: 'Hide when clicked outside',
-            type: 'checkbox',
-            checked: !alwaysOnTop,
+            label: 'Preferences...',
+            accelerator: 'Cmd+,',
             click: () => {
-                alwaysOnTop = !alwaysOnTop;
-                mainWindow.setAlwaysOnTop(alwaysOnTop, 'floating');
-                mainWindow.webContents.send('aot-tray', alwaysOnTop); // Send IPC message to renderer process
+                if (!prefsWindow) {
+                    createPrefsWindow();
+                }
+                prefsWindow.show();
+                prefsWindow.focus();
             }
-        },
-        {
-            label: 'Use global shortcut (Alt+Space)',
-            type: 'checkbox',
-            checked: isShortcutRegistered,
-            click: (menuItem) => {
-                isShortcutRegistered = menuItem.checked;
-                toggleGlobalShortcut(isShortcutRegistered);
-                mainWindow.webContents.send('global-shortcut', isShortcutRegistered); // Send IPC message to renderer process
-            },
         },
         { type: 'separator' },
         { role: 'quit', accelerator: 'CmdOrCtrl+Q' }
     ]);
     contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'Hide when clicked outside',
-            type: 'checkbox',
-            checked: !alwaysOnTop,
-            click: () => {
-                alwaysOnTop = !alwaysOnTop;
-                mainWindow.setAlwaysOnTop(alwaysOnTop, 'floating');
-                mainWindow.webContents.send('aot-tray', alwaysOnTop); // Send IPC message to renderer process
-            }
-        },
-        {
-            label: 'Use global shortcut (Alt+Space)',
-            type: 'checkbox',
-            checked: isShortcutRegistered,
-            click: (menuItem) => {
-                isShortcutRegistered = menuItem.checked;
-                toggleGlobalShortcut(isShortcutRegistered);
-                mainWindow.webContents.send('global-shortcut', isShortcutRegistered); // Send IPC message to renderer process
-            },
-        },
-        { type: 'separator' },
         {
             label: 'Home',
             click: () => {
@@ -274,9 +261,31 @@ function rebuildContextMenu() {
             accelerator: 'Command+Right'
         },
         { type: 'separator' },
+        {
+            label: 'Preferences...',
+            accelerator: 'Cmd+,',
+            click: () => {
+                if (!prefsWindow) {
+                    createPrefsWindow();
+                }
+                prefsWindow.show();
+                prefsWindow.focus();
+            }
+        },
+        { type: 'separator' },
         { role: 'quit', accelerator: 'CmdOrCtrl+Q' }
     ]);
 }
+
+ipcMain.on('open-prefs', (e, tab) => {
+    if (!prefsWindow) {
+        createPrefsWindow();
+        showPrefsWindow(tab);
+    } else {
+        showPrefsWindow(tab);
+        prefsWindow.focus();
+    }
+})
 
 ipcMain.on('nav', (e, nav) => {
     canReload = nav.canReload;
@@ -288,6 +297,10 @@ ipcMain.on('nav', (e, nav) => {
         canGoForward = false;
     }
     rebuildContextMenu();
+})
+
+ipcMain.on('globalShortcut-setting', (e, state) => {
+    toggleGlobalShortcut(state);
 })
 
 function toggleGlobalShortcut(enable) {
@@ -319,7 +332,7 @@ ipcMain.on('changes', (event) => {
             return;
         }
         const htmlContent = convertToHtml(data);
-        event.sender.send('changes', htmlContent);
+        prefsWindow.webContents.send('changes', htmlContent);
     });
 });
 
@@ -433,7 +446,7 @@ app.on('ready', () => {
 
     mainWindow.webContents.on('did-finish-load', function () {
         mainWindow.webContents.send('appVer', app.getVersion());
-    })
+    });
 
     ipcMain.on('start-drag', (event, { startX, startY }) => {
         const { x, y } = mainWindow.getBounds();
@@ -469,3 +482,127 @@ app.on('activate', () => {
         }
     }
 });
+
+// Settings (preferences)
+
+function createPrefsWindow() {
+    prefsWindow = new BrowserWindow({
+        width: 425,
+        minWidth: 425,
+        height: 300,
+        minHeight: 200,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        fullscreenable: false,
+        titleBarStyle: 'hidden',
+        trafficLightPosition: { x: 7, y: 7 },
+        vibrancy: 'sidebar',
+        alwaysOnTop: true,
+        frame: true,
+        show: false,
+        webPreferences: {
+            contextIsolation: false,
+            nodeIntegration: true,
+        }
+    });
+
+    prefsWindow.loadFile('./prefsWindow/prefsIndex.html');
+    prefsWindow.setAlwaysOnTop(true, 'floating');
+
+    prefsWindow.on('blur', function () {
+        prefsWindow.webContents.send('window-blur');
+    });
+
+    prefsWindow.on('focus', function () {
+        prefsWindow.webContents.send('window-focus');
+    });
+
+    prefsWindow.once('ready-to-show', () => {
+        const accentColor = systemPreferences.getAccentColor();
+        prefsWindow.webContents.send('accent', "#" + accentColor);
+        mainWindow.webContents.send('accent', "#" + accentColor);
+    });
+
+    prefsWindow.on('close', (event) => {
+        event.preventDefault();
+        prefsWindow.hide();
+        if (!mainWindow.isVisible()) {
+            mainWindow.show();
+            mainWindow.focus();
+        } else {
+            mainWindow.focus();
+        }
+    });
+
+    prefsWindow.on('closed', () => {
+        prefsWindow = null;
+    });
+
+    sendSystemColorsToRenderer();
+}
+
+function showPrefsWindow(tab) {
+    if (!prefsWindow) {
+        createPrefsWindow();
+    }
+    prefsWindow.show();
+    prefsWindow.focus();
+    if (!tab || tab == 'general') {
+        prefsWindow.webContents.send('show-tab', 'general')
+    } else if (tab == 'labs') {
+        prefsWindow.webContents.send('show-tab', 'labs')
+    } else if (tab == 'changes') {
+        prefsWindow.webContents.send('show-tab', 'changes')
+    } else {
+        prefsWindow.webContents.send('show-tab', tab)
+    }
+}
+
+ipcMain.on('prefs-resize', (e, nuWidth, nuHeight) => {
+    prefsWindow.setSize(nuWidth, nuHeight, true)
+})
+
+ipcMain.on('mainWindow-function', (e, fnName) => {
+    mainWindow.webContents.send('runFnFromPrefs', fnName)
+})
+
+ipcMain.on('bookmark-style', (e) => {
+    mainWindow.webContents.send('bookmark-style')
+})
+
+ipcMain.on('searchEngine', (e) => {
+    mainWindow.webContents.send('searchEngine')
+})
+
+ipcMain.on('get-colors', (e, fnName) => {
+    sendSystemColorsToRenderer();
+})
+
+function sendSystemColorsToRenderer() {
+    const availableColors = [
+        'blue', 'brown', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'yellow'
+    ];
+
+    const systemColorData = availableColors.map(color => {
+        const hexCode = systemPreferences.getSystemColor(color);
+        return { name: color, hex: hexCode };
+    });
+
+    prefsWindow.webContents.send('system-colors', systemColorData);
+}
+
+ipcMain.on('toggle-prefs', () => {
+    if (!prefsWindow) {
+        createPrefsWindow();
+    }
+
+    if (prefsWindow.isVisible()) {
+        prefsWindow.webContents.send('window-blur');
+        prefsWindow.hide();
+    } else {
+        prefsWindow.show();
+        prefsWindow.focus();
+        prefsWindow.webContents.send('window-focus');
+    }
+})

@@ -1,0 +1,907 @@
+* {
+    user-select: none !important;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    transition: background .2s;
+    overflow: hidden;
+
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.titlebar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    overflow: visible;
+    margin-bottom: 40px;
+
+    /* background: linear-gradient(to bottom, var(--titlebar-rest) 30px, transparent); */
+
+    width: 100vw;
+    height: 30px;
+
+    &::before {
+        content: '';
+        width: 120%;
+        height: 150%;
+        border-radius: 100%;
+
+        background-color: var(--titlebar-rest);
+        filter: blur(15px);
+        transform: scale(1);
+
+        transition: .2s;
+
+        position: absolute;
+        z-index: -1;
+        top: -75%;
+    }
+
+    & .titlebarText {
+        position: relative;
+        z-index: 1;
+        -webkit-app-region: drag;
+
+        margin: 0;
+        margin-bottom: -5px;
+        padding: 0;
+        padding-top: 6px;
+        box-sizing: border-box;
+
+        font-size: 13px;
+        font-weight: 700;
+
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+
+        width: 100%;
+        height: 33px;
+    }
+
+    & .tabBtns {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: fit-content;
+        height: fit-content;
+        padding: 4px;
+        border-radius: 12px;
+
+        transition: .3s;
+        transform-origin: top center;
+
+        position: absolute;
+        top: 115%;
+        z-index: 200;
+
+        background-color: var(--titlebar-tabbox);
+        box-shadow: 0 3px 10px #00000011;
+    }
+
+    & .tabBtns:has(.tabButton:hover) .tabButton:not(:hover).selected {
+        color: var(--text-primary);
+    }
+
+    & .tabBtns::before {
+        /* content: ''; */
+        width: 100%;
+        height: 100%;
+
+        pointer-events: none;
+
+        opacity: .75;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        border-radius: inherit;
+    }
+
+    & .tabBtns>p {
+        width: 100%;
+        height: 45px;
+        -webkit-app-region: drag;
+
+        margin: 0;
+        margin-top: -15px;
+        padding: 0;
+
+        position: relative;
+
+        display: flex;
+        flex-shrink: 0;
+    }
+
+    & .tabButton {
+        border-radius: 60px;
+
+        position: relative;
+        z-index: 100;
+        transition: .15s;
+
+        box-sizing: border-box;
+        padding: 5px 10px;
+
+        display: flex;
+        flex-shrink: 0;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    & .tabButton:hover {
+        color: #222;
+    }
+
+    & .tabButton.selected {
+        color: var(--accent);
+        /* text-shadow: 0 1.25px 5px #00000033; */
+    }
+
+    & .tabButton.selected:hover {
+        color: #eee !important;
+    }
+
+    & .tabButton icon {
+        display: none;
+    }
+
+    & .tabButton::before {
+        content: attr(data-title);
+        font-size: 13px;
+        opacity: .5 !important;
+        font-weight: 600;
+
+        transition: .15s;
+
+        position: relative;
+        /* bottom: 4px; */
+    }
+
+    & .tabButton:hover::before {
+        opacity: 1 !important;
+        transform: scale(1.066) !important;
+    }
+
+    & .tabButton.selected::before {
+        opacity: 1 !important;
+    }
+
+    & .tabButton:active::before {
+        opacity: .9;
+        transform: scale(.933);
+    }
+
+    & .tabBtns:not(:hover) .tabButton.selected::before {
+        opacity: 1;
+        font-weight: 600;
+    }
+
+    & .tabBtns .gleam {
+        box-sizing: border-box;
+        padding: 5px 11px;
+        height: 26px;
+
+        overflow: hidden;
+
+        transition: .3s;
+
+        border-radius: 9px !important;
+        background-color: var(--titlebar-button-select) !important;
+
+        position: absolute;
+        z-index: -1;
+    }
+
+    & .tabBtns:not(:hover) .gleam {
+        opacity: .9;
+    }
+
+    & .tabBtns:has(.tabButton.selected:hover) .gleam {
+        background-color: var(--accent) !important;
+    }
+
+    & .tabBtns:has(.tabButton:hover) .gleam {
+        transform: scale(1.066);
+        background-color: var(--titlebar-button-hover) !important;
+        box-shadow: 0 4px 5px #00000015;
+    }
+
+    & .tabBtns:has(.tabButton:active) .gleam {
+        transform: scale(.933);
+    }
+
+    & .tabBtns:has(.tabButton:hover) .gleam::before {
+        content: '';
+        width: 100%;
+        height: 130%;
+
+        position: absolute;
+        bottom: 0;
+        left: 0;
+
+        transition: .15s;
+
+        opacity: .035;
+        border-radius: inherit;
+        background: linear-gradient(to bottom, #eee, #222);
+    }
+
+    & .tabBtns:has(.tabButton.selected:hover) .gleam::before {
+        mix-blend-mode: overlay;
+        opacity: .2;
+    }
+}
+
+body.blur {
+    & .titlebar::before {
+        background-color: var(--titlebar-blur);
+        transform: scale(.9);
+    }
+
+    & .tabBtns,
+    & .changesVertex {
+        /* background-color: var(--surface-button); */
+        transform: scale(.933) !important;
+        top: 100%;
+        pointer-events: none;
+
+        color: var(--text-primary-blur);
+    }
+
+    & .tabBtns .gleam {
+        transform: scale(.95);
+        opacity: .5 !important;
+    }
+
+    & .tabButton.selected::before,
+    & .tabButton.selected icon {
+        color: var(--text-primary-blur);
+    }
+
+    & .titlebarText {
+        color: var(--text-primary-blur);
+    }
+
+    & .prefDiv .inputArea>.disclosure-arrow {
+        background-color: transparent !important;
+        box-shadow: none;
+        color: var(--text-primary);
+    }
+
+    & .prefDiv input[type="checkbox"]:checked {
+        background-color: var(--surface-button-solid);
+    }
+
+    & .prefDiv .inputArea>.disclosure-arrow::after {
+        opacity: 0;
+    }
+
+    & .prefDiv select {
+        box-shadow:
+            inset 0 -.5px 0 .25px var(--surface),
+            inset 0 -.5px 0 .5px var(--surface-solid);
+    }
+
+    & .settingsIcon {
+        background: grey !important;
+    }
+
+    & .settingsIcon::before {
+        opacity: .25;
+    }
+}
+
+.settingsSect {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    flex-shrink: 0;
+
+    width: 100%;
+    height: fit-content !important;
+
+    position: relative;
+}
+
+.tab {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+
+    position: absolute;
+    width: calc(100%);
+    height: fit-content;
+
+    overflow: visible;
+
+    box-sizing: border-box;
+    margin: 10px;
+    padding: 0 15px 0 15px;
+
+    opacity: 0;
+    pointer-events: none;
+
+    &.show {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    &:not(.show) {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* &::before {
+        content: attr(data-title);
+    } */
+
+    & .subHead {
+        width: 100%;
+        margin: 10px 0 4px 0;
+
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    & .subHead:first-of-type {
+        margin-top: 0 !important;
+    }
+
+    & .settingsSect {
+        gap: 1px;
+    }
+
+    & .settingsSect>.prefDiv:not(:last-of-type)::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        right: -15px;
+
+        background-color: var(--surface-tab-border);
+
+        height: 1px;
+        width: calc(100% - 20px);
+    }
+
+    & .prefDiv .settingsIcon icon {
+        text-shadow: 0 1px 3px #00000032;
+    }
+
+    & .generalSect .settingsIcon {
+        background-color: var(--system-red);
+    }
+
+    & .launcherSect .settingsIcon {
+        background-color: var(--system-orange);
+    }
+
+    & .chromeSect .settingsIcon {
+        background-color: var(--system-green);
+    }
+
+    & .searchSect .settingsIcon {
+        background-color: var(--system-blue);
+    }
+
+    & .labDiv .settingsIcon {
+        background-color: var(--system-yellow);
+    }
+}
+
+.tab.labs {
+    & .prefDiv label .labNotes {
+        display: flex;
+        flex-direction: column;
+        order: 9;
+
+        padding: 0;
+        margin: 0;
+        margin-top: 7px;
+
+        font-size: 12px;
+    }
+}
+
+.tab.changes {
+    height: 100%;
+    display: flex;
+    gap: 0;
+}
+
+.prefsBody {
+    display: flex;
+    justify-content: center;
+
+    position: relative;
+
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    overflow: visible;
+
+    width: 100%;
+    height: 100%;
+}
+
+.prefDiv {
+    transition: .35s;
+    transform-origin: center right;
+
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 10px;
+
+    overflow: visible;
+
+    position: relative;
+
+    width: 100%;
+    height: fit-content;
+    padding: 8px 0;
+    box-sizing: border-box;
+
+    & label {
+        display: flex;
+        flex-direction: column;
+
+        width: calc(100% - 70px);
+        margin-right: auto;
+        height: fit-content;
+        overflow: hidden;
+
+        position: relative;
+        z-index: 1;
+    }
+
+    & label::before {
+        content: attr(title);
+        font-weight: 500;
+        font-size: 12.5px;
+    }
+
+    & .inputArea {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        flex-direction: row-reverse;
+
+        height: 42px;
+
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 2;
+    }
+
+    & .inputArea .infoHover {
+        font-size: 16px;
+        font-weight: 300;
+        opacity: .6;
+    }
+
+    & input[type="checkbox"] {
+        appearance: none;
+        margin: 0;
+        color: var(--text-primary);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        width: 32px;
+        height: 18px;
+        border-radius: 40px;
+        background-color: var(--surface-button-solid);
+
+        position: relative;
+        z-index: 1;
+
+        overflow: hidden;
+    }
+
+    & input[type="checkbox"]:checked {
+        background-color: var(--accent);
+    }
+
+    & input[type="checkbox"]::after {
+        content: "";
+        width: 16px;
+        height: 16px;
+        background-color: white;
+        border-radius: 100px;
+
+        position: absolute;
+        left: 1px;
+
+        transition: .15s;
+    }
+
+    & input[type="checkbox"]:checked::after {
+        left: calc(100% - 17px);
+    }
+
+    & select {
+        appearance: none;
+        height: 22px;
+        width: 140px;
+        border-radius: 6px;
+        border: none !important;
+        font-size: 13px;
+
+        background-color: var(--surface-select-area);
+        box-shadow:
+            inset 0 -.5px 0 .25px var(--surface),
+            inset 0 -.5px 0 .5px var(--surface-solid),
+            0 1px 2px var(--surface-shadow);
+        color: var(--text-primary);
+
+        padding: 0 7px;
+        padding-right: 22px;
+        margin: 0;
+        box-sizing: border-box;
+
+        display: flex;
+        align-items: center;
+    }
+
+    & .inputArea>.disclosure-arrow {
+        font-family: 'SF Pro', SfPro;
+        font-size: 10.5px;
+        font-weight: 300;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 18px;
+        height: 18px;
+        overflow: hidden;
+        pointer-events: none;
+
+        border-radius: 5px;
+        background-color: var(--accent);
+        box-shadow: 0 0 0 .5px var(--surface-tab-border);
+        color: white;
+
+        position: absolute;
+        z-index: 1000;
+        right: 2px;
+    }
+
+    & .inputArea>.disclosure-arrow::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        opacity: .25;
+        background: linear-gradient(to bottom, white, transparent);
+    }
+
+    & label::before {
+        content: attr(title);
+        font-weight: 500;
+        font-size: 12.5px;
+    }
+
+    & label::after {
+        content: attr(desc);
+        font-size: 11px;
+        opacity: .5;
+    }
+
+    & .settingsIcon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        overflow: hidden;
+        position: relative;
+
+        width: 26px;
+        height: 26px;
+
+        border-radius: 6px;
+
+        box-shadow: 0 1px 4px #00000032;
+        color: white;
+    }
+
+    & .settingsIcon::before {
+        content: '';
+        width: 100%;
+        height: 100%;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+
+        opacity: .8;
+
+        mix-blend-mode: overlay;
+        background: linear-gradient(to bottom, #eee, #222);
+    }
+
+    & .settingsIcon icon {
+        position: relative;
+        z-index: 100;
+    }
+}
+
+.changesDiv {
+    width: 100%;
+    height: 100%;
+
+    box-sizing: border-box;
+
+    pointer-events: all;
+    transition: .3s;
+
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+
+    position: relative;
+    z-index: 1;
+
+    &::before {
+        content: '';
+        width: 110%;
+        height: 100%;
+
+        position: absolute;
+        z-index: 0;
+    }
+
+    & .versionDiv {
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding: 0 10px !important;
+
+        position: absolute;
+        top: 0;
+
+        opacity: 0;
+        pointer-events: none;
+        transition: .2s;
+
+        overflow-y: scroll !important;
+        width: calc(100% + 32px);
+        height: calc(100%);
+
+        mask-image: linear-gradient(to bottom, transparent 0px, black 15px);
+
+        box-shadow: none !important;
+    }
+
+    & .versionDiv.show {
+        opacity: 1;
+        pointer-events: all;
+        background: linear-gradient(to bottom, transparent, var(--surface));
+    }
+
+    & .versionDiv:first-of-type>h3::before {
+        content: '(Current) ';
+    }
+
+    & .versionDiv h3 {
+        margin: 5px 0;
+        padding: 0;
+        position: relative;
+    }
+
+    & .versionDiv h3:first-of-type {
+        display: none;
+    }
+
+    & .versionDiv ul {
+        list-style-type: disc;
+        margin: 5px 0 0 20px;
+        padding: 0;
+    }
+
+    & .versionDiv ul ul {
+        list-style-type: circle;
+        margin-left: 20px;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    & .versionDiv li {
+        margin: 5px 0;
+        padding: 0;
+    }
+
+    & .versionDiv b {
+        font-weight: bold;
+    }
+}
+
+.changesVertex {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    flex-shrink: 0;
+
+    transform: translateY(10px);
+    width: 100%;
+    height: fit-content;
+
+    opacity: 0;
+    pointer-events: none;
+
+    padding-right: 17px;
+    box-sizing: border-box;
+
+    transition: .25s;
+
+    position: absolute;
+    top: 34px;
+    z-index: 20;
+
+    & .versionNavBtn {
+        z-index: 10;
+
+        background-color: var(--titlebar-tabbox);
+        box-shadow: 0 3px 10px #00000011;
+
+        color: var(--text-primary);
+        font-family: 'SF Pro', SfPro;
+        border-radius: 100px;
+
+        border: none;
+        outline: none !important;
+        padding: 0;
+        margin: 0;
+        transition: .4s;
+
+        overflow: hidden;
+        opacity: 1;
+
+        position: relative;
+
+        width: 30px;
+        height: 30px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    & .versionNavBtn:hover {
+        background-color: white;
+        color: black;
+
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 5px #00000015;
+    }
+
+    & .versionNavBtn::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+
+        transition: .15s;
+
+        opacity: 0;
+        border-radius: inherit;
+        background: linear-gradient(to bottom, #fefefe, #111);
+    }
+
+    & .versionNavBtn:hover::after {
+        opacity: .1;
+    }
+
+    & .versionNavBtn:active {
+        transform: scale(.933) !important;
+    }
+
+    & .versionNavBtn.disabled {
+        opacity: .5;
+        pointer-events: none;
+    }
+
+    &:has(.versionNavBtn:hover) .versionNavBtn:not(:hover) {
+        pointer-events: none;
+    }
+
+    & .versionNavBtn.nextBtn {
+        border-radius: 5px 20px 20px 5px;
+    }
+
+    & .versionNavBtn.prevBtn {
+        border-radius: 20px 5px 5px 20px;
+    }
+
+    &::before {
+        content: attr(version);
+        font-size: 17px;
+        font-weight: 600;
+        margin-right: auto;
+
+        pointer-events: none;
+
+        width: 100%;
+
+        position: absolute;
+        left: 10px;
+
+        z-index: 1000;
+    }
+}
+
+body:has(.tabButton[data-title="What's New?"].selected) .changesVertex {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --surface-tab-border: #ddd;
+    }
+
+    .tabBtns::before,
+    .tab input[type="checkbox"] {
+        box-shadow:
+            0 0 0 1px #00000025,
+            inset 0 0 0 1px #ffffff45;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --surface-tab-border: #ffffff11;
+    }
+
+    .tabBtns::before,
+    .tab input[type="checkbox"] {
+        box-shadow:
+            0 0 0 1px #00000044,
+            inset 0 0 0 1px #ffffff19;
+    }
+}

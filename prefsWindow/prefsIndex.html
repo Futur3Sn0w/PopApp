@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferences</title>
+    <link rel="stylesheet" href="prefsCSS.css">
+    <link rel="stylesheet" href="../globals.css">
+</head>
+
+<body>
+    <div class="titlebar">
+        <p class="titlebarText">Preferences</p>
+        <div class="tabBtns">
+            <div class="gleam"></div>
+        </div>
+        <div class="changesVertex"></div>
+    </div>
+    <div class="prefsBody">
+        <div class="general tab show" data-title="General" symbol="􀍟">
+            <div class="settingsSect generalSect">
+                <div class="subHead">General:</div>
+                <div class="prefDiv generalDiv">
+                    <div class="settingsIcon">
+                        <icon>􀆕</icon>
+                    </div>
+                    <div class="inputArea">
+                        <input type="checkbox" name="globalShortcutToggle" id="globalShortcutToggle">
+                    </div>
+                    <label title="Global shortcut" desc="Use (⌥+A) to show/hide PopApp"></label>
+                </div>
+                <div class="prefDiv generalDiv">
+                    <div class="settingsIcon">
+                        <icon>􀋯</icon>
+                    </div>
+                    <div class="inputArea">
+                        <input type="checkbox" name="autoHideWindowToggle" id="autoHideWindowToggle">
+                    </div>
+                    <label title="Autohide main window" desc="Hide the app when you click outside of it"></label>
+                </div>
+            </div>
+
+            <div class="settingsSect searchSect">
+                <div class="subHead">Search:</div>
+                <div class="prefDiv generalDiv">
+                    <div class="settingsIcon">
+                        <icon>􀊫</icon>
+                    </div>
+                    <div class="inputArea">
+                        <select id="searchEngine">
+                            <optgroup label="Google">
+                                <option value="google">Google Search</option>
+                                <option value="gemini">Gemini</option>
+                            </optgroup>
+                            <optgroup label="Microsoft Bing">
+                                <option value="bing">Bing Search</option>
+                                <option value="copilot">Copilot</option>
+                            </optgroup>
+                            <optgroup label="Misc">
+                                <option value="chatgpt">ChatGPT</option>
+                            </optgroup>
+                        </select>
+                        <icon class="disclosure-arrow">􀆏</icon>
+                    </div>
+                    <label title="Search provider" desc="Service to utilize when searching"></label>
+                </div>
+            </div>
+
+            <div class="settingsSect launcherSect">
+                <div class="subHead">Launcher:</div>
+                <div class="prefDiv generalDiv">
+                    <div class="settingsIcon">
+                        <icon>􀐉</icon>
+                    </div>
+                    <div class="inputArea">
+                        <select id="bookmarkStyles">
+                            <optgroup label="PopApp">
+                                <option value="channel">(Default) Full</option>
+                                <option value="compact">Slim</option>
+                                <option value="badge">Nano</option>
+                            </optgroup>
+                            <optgroup label="Metro">
+                                <option value="metros">Small</option>
+                                <option value="metrow">Wide</option>
+                            </optgroup>
+                            <optgroup label="Inspired">
+                                <option value="chrome">Chrome</option>
+                                <option value="eleven">Eleven</option>
+                            </optgroup>
+                        </select>
+                        <icon class="disclosure-arrow">􀆏</icon>
+                    </div>
+                    <label title="Styles" desc="Change launcher item layout"></label>
+                </div>
+            </div>
+
+            <div class="settingsSect chromeSect">
+                <div class="subHead">Chrome area:</div>
+                <div class="prefDiv generalDiv">
+                    <div class="settingsIcon">
+                        <icon>􀾮</icon>
+                    </div>
+                    <div class="inputArea">
+                        <input type="checkbox" name="autoHideChromeToggle" id="autoHideChromeToggle">
+                        <!-- <icon class="infoHover" title="tooltip second">􀅴</icon> -->
+                    </div>
+                    <label title="Pin top chrome area" desc="Show the top chrome area regardless if hovered"></label>
+                </div>
+            </div>
+        </div>
+        <div class="labs tab" data-title="Labs" symbol="􁰍">
+            <div class="prefDiv labDiv">
+                <div class="settingsIcon">
+                    <icon>􀿫</icon>
+                </div>
+                <div class="inputArea">
+                    <input type="checkbox" name="vibrancyLabToggle" id="vibrancyLabToggle">
+                    <!-- <icon class="infoHover" title="tooltip second">􀅴</icon> -->
+                </div>
+                <label title="Vibrancy" desc="Attempt to force a clear background on pages for a 'vibrant' effect">
+                    <p class="labNotes">
+                        <b>Lab Notes:</b>
+                        - May effect visibility
+                        <br>
+                        - System theme support recommended
+                        <br>
+                        - Not compatible with all sites
+                    </p>
+                </label>
+            </div>
+        </div>
+        <div class="changes tab" data-title="What's New?" symbol="􀣔">
+            <div class="changesDiv" id="changesDiv"></div>
+        </div>
+    </div>
+
+    <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
+    <script src="../jQuery/jquery.min.js"></script>
+    <script>if (window.module) module = window.module;</script>
+    <script src="prefsJS.js"></script>
+</body>
+
+</html>
